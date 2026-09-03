@@ -1,0 +1,41 @@
+# Musica-Notes Release alpha-0.1.0
+# This is the configuration file for the browser front-end 
+# for the musica-notes browser application. This file contains 
+# setup information for the Master/client application.
+
+# MASTER_IP is the machine IP address for a shared network
+# install. It is typically of the form:
+# MASTER_IP=aaa.bbb.xxx.yyy
+#
+# To set the MASTER_IP, modify the IP address to the target host
+# before uncommenting the line below: 
+# MASTER_IP=192.168.0.47
+
+# The location of the musica database is stored using the DATABASE
+# path. The DATABASE path is typically DATABASE=<some_path_location>/musica.db
+# or whatever the name of the Musica database is called. For a single-user
+# usage, the database should be local to the Musica-Notes front-end.
+# To set the DATABASE field, edit the line below, pointing to the 
+# target database before uncommenting the line.
+# DATABASE=./musica.db
+
+# NOTE - If this is a shared desktop and each user has their own musica
+# database, they SHOULD install a copy in their OWN user space so as not
+# to impact other users' access to their content.
+
+# Master User - This is a single/multiple user(s) who have the ability to 
+# not only query a db, but also to edit/add/delete records from the db.
+# Depending on the enviornment, there can be one, multiple or no Master Users.
+# The Notes application checks the logged in user against the Master User 
+# list to determine what privileges the current user has. 
+#
+# MASTER_USER is simply the name of the logged in user. If the user 
+# attempting to access Notes is on the MASTER_USER list, they have access 
+# to full editing capabilities and can add/delete/edit/query a record. If
+# the user IS NOT on the MASTER_USER list, they can only query the db.
+#
+# To set the MASTER_USER, replace the string <user_id> with the users
+# account name. If more than one user is to be granted MASTER_USER status, 
+# Add a new line with the users system id. For example:
+# MASTER_USER=<user_id-1>
+# MASTER_USER=<user_id-2>
