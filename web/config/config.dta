@@ -9,7 +9,11 @@
 #
 # To set the MASTER_IP, modify the IP address to the target host
 # before uncommenting the line below: 
+<<<<<<< HEAD
 # MASTER_IP=192.168.0.47
+=======
+# MASTER_IP=
+>>>>>>> 78c082a (Add Notes configuration file)
 
 # The location of the musica database is stored using the DATABASE
 # path. The DATABASE path is typically DATABASE=<some_path_location>/musica.db
@@ -17,7 +21,11 @@
 # usage, the database should be local to the Musica-Notes front-end.
 # To set the DATABASE field, edit the line below, pointing to the 
 # target database before uncommenting the line.
+<<<<<<< HEAD
 # DATABASE=./musica.db
+=======
+# DATABASE=
+>>>>>>> 78c082a (Add Notes configuration file)
 
 # NOTE - If this is a shared desktop and each user has their own musica
 # database, they SHOULD install a copy in their OWN user space so as not
