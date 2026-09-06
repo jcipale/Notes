@@ -25,7 +25,16 @@
             color: #3b3528;
             position: relative
         }
-
+        
+        .settings-bar {
+            text-align: center;
+            padding: 12px;
+        }
+        
+        .subtitle h2 {    
+            margin: 0;
+        }
+        
         .notes-title {
             display: flex;
             justify-content: center;
@@ -93,8 +102,7 @@
 
         .modal-header {
             display: flex;
-            justify-content:
-                space-between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
@@ -129,6 +137,24 @@
             padding: 6px 20px;
             cursor: pointer;
         }
+        
+        .menu-bar {
+             text-align: center;
+             padding: 4px 20px;
+             margin: 0;
+             background-color: #d8c9a3;
+             border-top: 3px solid #777;
+             border-bottom: 3px solid #777;
+        }
+        
+        .menu-button {
+            padding: 8px 18px;
+            margin: 0 8px;
+            font-size: 1em;
+            border: 1px solid #777;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
     </style>
 </head>
@@ -151,13 +177,11 @@
         </button>
 
     </header>
-
-    <div class="settings-bar">
-        <button
-            class="settings-button"
-            onclick="openSettings()">
-            ⚙ Settings
-        </button>
+    
+    <div class="menu-bar">
+        <button class="menu-button">Add Record</button>
+        <button class="menu-button">Query</button>
+        <button class="menu-button">Search</button>
     </div>
 
     <div
@@ -187,7 +211,7 @@
             </button>
         </div>
     </div>
-
+    
     <script>
         function openSettings() {
             const modal =
