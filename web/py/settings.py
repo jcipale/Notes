@@ -5,7 +5,7 @@
 #
 # settings.py
 #
-# Reads and parses the Musica-Notes config.dta file.
+# Reads and parses the Musica-Notes configuration file.
 #
 
 import json
@@ -14,43 +14,59 @@ import sys
 
 
 def get_config_path():
+
     """
     Return the location of config.dta.
 
-    settings.py is expected to reside in the web directory.
-    config.dta resides in web/config.
+    settings.py resides in:
+
+        ./py/settings.py
+
+    config.dta resides in:
+
+        ./config/config.dta
     """
 
     script_dir = os.path.dirname(
         os.path.abspath(__file__)
     )
 
-    return os.path.join(
+    config_path = os.path.join(
         script_dir,
-		"..",
+        "..",
         "config",
         "config.dta"
     )
 
+    return os.path.abspath(config_path)
+
 
 def read_settings(config_file):
-    """
-    Read config.dta and return the active settings.
 
-    Blank lines and lines beginning with '#' are ignored.
-    Multiple MASTER_USER entries are stored in a list.
+    """
+    Read config.dta and return active settings.
+
+    Blank lines and comments are ignored.
+
+    Multiple MASTER_USER entries are stored
+    in a list.
     """
 
     settings = {
+
         "MASTER_IP": None,
         "DATABASE": None,
         "MASTER_USER": []
+
     }
 
     try:
 
-        with open(config_file, "r",
-                  encoding="utf-8") as config:
+        with open(
+            config_file,
+            "r",
+            encoding="utf-8"
+        ) as config:
 
             for line in config:
 
@@ -77,7 +93,10 @@ def read_settings(config_file):
                 if "=" not in line:
                     continue
 
-                key, value = line.split("=", 1)
+                key, value = line.split(
+                    "=",
+                    1
+                )
 
                 key = key.strip()
                 value = value.strip()
@@ -99,13 +118,15 @@ def read_settings(config_file):
 
                 elif key == "MASTER_USER":
 
-                    settings["MASTER_USER"].append(value)
+                    settings[
+                        "MASTER_USER"
+                    ].append(value)
 
     except FileNotFoundError:
 
         settings["ERROR"] = (
-            f"Configuration file not found: "
-            f"{config_file}"
+            "Configuration file not found: "
+            + config_file
         )
 
     except OSError as error:
@@ -115,62 +136,166 @@ def read_settings(config_file):
     return settings
 
 
+def determine_setup_type(settings):
+
+    """
+    Determine the Musica-Notes installation type
+    from the active configuration.
+    """
+
+    if not settings["DATABASE"]:
+
+        return "Configuration Incomplete"
+
+
+    if settings["MASTER_IP"]:
+
+        return "Networked"
+
+
+    if settings["MASTER_USER"]:
+
+        return "Local / Shared"
+
+
+    return "Local / Single User"
+
+
+def print_settings(settings, setup_type):
+
+    """
+    Display configuration information
+    for CLI use.
+    """
+
+    print(
+        "Musica-Notes Configuration"
+    )
+
+    print()
+
+    if "ERROR" in settings:
+
+        print(
+            "ERROR: "
+            + settings["ERROR"]
+        )
+
+        return
+
+
+    print(
+        "SETUP_TYPE="
+        + setup_type
+    )
+
+
+    if settings["MASTER_IP"]:
+
+        print(
+            "MASTER_IP="
+            + settings["MASTER_IP"]
+        )
+
+
+    if settings["DATABASE"]:
+
+        print(
+            "DATABASE="
+            + settings["DATABASE"]
+        )
+
+
+    for user in settings["MASTER_USER"]:
+
+        print(
+            "MASTER_USER="
+            + user
+        )
+
+
+def print_json(settings, setup_type):
+
+    """
+    Display configuration information
+    in JSON format.
+    """
+
+    response = {
+
+        "SETUP_TYPE": setup_type,
+
+        "MASTER_IP":
+            settings["MASTER_IP"],
+
+        "DATABASE":
+            settings["DATABASE"],
+
+        "MASTER_USER":
+            settings["MASTER_USER"]
+
+    }
+
+
+    if "ERROR" in settings:
+
+        response["ERROR"] = (
+            settings["ERROR"]
+        )
+
+
+    print(
+        json.dumps(
+            response,
+            indent=4
+        )
+    )
+
+
 def main():
 
     config_file = get_config_path()
 
-    settings = read_settings(config_file)
+    settings = read_settings(
+        config_file
+    )
+
+
+    if "ERROR" in settings:
+
+        setup_type = (
+            "Configuration Error"
+        )
+
+    else:
+
+        setup_type = determine_setup_type(
+            settings
+        )
+
 
     #
-    # When called from the command line,
-    # display the parsed settings.
+    # JSON output requested.
     #
 
-    if "GATEWAY_INTERFACE" not in os.environ:
+    if len(sys.argv) > 1 and \
+       sys.argv[1] == "--json":
 
-        print("Musica-Notes Configuration")
-        print()
-
-        if "ERROR" in settings:
-
-            print(
-                f"ERROR: {settings['ERROR']}"
-            )
-
-            return
-
-        if settings["MASTER_IP"]:
-
-            print(
-                f"MASTER_IP={settings['MASTER_IP']}"
-            )
-
-        if settings["DATABASE"]:
-
-            print(
-                f"DATABASE={settings['DATABASE']}"
-            )
-
-        for user in settings["MASTER_USER"]:
-
-            print(
-                f"MASTER_USER={user}"
-            )
+        print_json(
+            settings,
+            setup_type
+        )
 
         return
 
+
     #
-    # CGI/Web response.
+    # Default CLI output.
     #
 
-    print("Content-Type: application/json")
-    print()
-
-    print(
-        json.dumps(
-            settings,
-            indent=4
-        )
+    print_settings(
+        settings,
+        setup_type
     )
 
 
