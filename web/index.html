@@ -56,11 +56,6 @@
             font-style: italic;
         }
 
-        .settings-bar {
-            text-align: center;
-            padding: 12px;
-        }
-
         .settings-button {
             padding: 6px 14px;
             font-size: 1em;
@@ -138,7 +133,7 @@
             cursor: pointer;
         }
         
-        .menu-bar {
+        .menu-bar_1 {
              text-align: center;
              padding: 4px 20px;
              margin: 0;
@@ -147,6 +142,15 @@
              border-bottom: 3px solid #777;
         }
         
+        .menu-bar_2 {
+             text-align: center;
+             padding: 4px 20px;
+             margin: 0;
+             background-color: #d8c9a3;
+             border-top: 0px solid #777;
+             border-bottom: 3px solid #777;
+        }
+                
         .menu-button {
             padding: 8px 18px;
             margin: 0 8px;
@@ -172,16 +176,19 @@
             <h2>Music Collection Database</h2>
         </div>
 
-        <button class="settings-button">
+        <button class="settings-button" onclick="openSettings()">
             ⚙ Settings
         </button>
 
     </header>
     
-    <div class="menu-bar">
-        <button class="menu-button">Add Record</button>
+    <div class="menu-bar_1">
         <button class="menu-button">Query</button>
         <button class="menu-button">Search</button>
+    </div>
+    
+    <div class="menu-bar_2">
+        <button class="menu-button">Modify Record</button>
     </div>
 
     <div
@@ -322,6 +329,19 @@
                     settings.MASTER_USER.join(
                         "<br>"
                     ) +
+                    '</div>' +
+                    '</div>';
+            }
+            
+            if (settings.USAGE_TYPE) {
+                html +=
+                    '<div class="setting-row">' +
+                    '<span class="setting-label">' +
+                    'Usage Type:' +
+                    '</span>' +
+                    '<div class="setting-value">' +
+
+                    settings.USAGE_TYPE +
                     '</div>' +
                     '</div>';
             }

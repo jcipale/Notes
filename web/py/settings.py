@@ -10,11 +10,9 @@
 
 import json
 import os
-import sys
 
 
 def get_config_path():
-
     """
     Return the location of config.dta.
 
@@ -42,7 +40,6 @@ def get_config_path():
 
 
 def read_settings(config_file):
-
     """
     Read config.dta and return active settings.
 
@@ -53,11 +50,10 @@ def read_settings(config_file):
     """
 
     settings = {
-
         "MASTER_IP": None,
         "DATABASE": None,
-        "MASTER_USER": []
-
+        "MASTER_USER": [],
+        "USAGE_TYPE": None
     }
 
     try:
@@ -122,6 +118,10 @@ def read_settings(config_file):
                         "MASTER_USER"
                     ].append(value)
 
+                elif key == "USAGE_TYPE":
+
+                    settings["USAGE_TYPE"] = value
+
     except FileNotFoundError:
 
         settings["ERROR"] = (
@@ -137,32 +137,45 @@ def read_settings(config_file):
 
 
 def determine_setup_type(settings):
-
     """
     Determine the Musica-Notes installation type
     from the active configuration.
     """
 
+    #
+    # DATABASE is required.
+    #
+
     if not settings["DATABASE"]:
 
         return "Configuration Incomplete"
 
+    #
+    # MASTER_IP identifies a networked instance.
+    #
 
     if settings["MASTER_IP"]:
 
         return "Networked"
 
+    #
+    # Local installation with designated
+    # Master Users.
+    #
 
     if settings["MASTER_USER"]:
 
         return "Local / Shared"
 
+    #
+    # Local installation with no separately
+    # designated Master Users.
+    #
 
     return "Local / Single User"
 
 
 def print_settings(settings, setup_type):
-
     """
     Display configuration information
     for CLI use.
@@ -183,12 +196,10 @@ def print_settings(settings, setup_type):
 
         return
 
-
     print(
         "SETUP_TYPE="
         + setup_type
     )
-
 
     if settings["MASTER_IP"]:
 
@@ -197,7 +208,6 @@ def print_settings(settings, setup_type):
             + settings["MASTER_IP"]
         )
 
-
     if settings["DATABASE"]:
 
         print(
@@ -205,6 +215,12 @@ def print_settings(settings, setup_type):
             + settings["DATABASE"]
         )
 
+    if settings["USAGE_TYPE"]:
+
+        print(
+            "USAGE_TYPE="
+            + settings["USAGE_TYPE"]
+        )
 
     for user in settings["MASTER_USER"]:
 
@@ -215,27 +231,22 @@ def print_settings(settings, setup_type):
 
 
 def print_json(settings, setup_type):
-
     """
     Display configuration information
     in JSON format.
     """
 
     response = {
-
         "SETUP_TYPE": setup_type,
-
         "MASTER_IP":
             settings["MASTER_IP"],
-
         "DATABASE":
             settings["DATABASE"],
-
         "MASTER_USER":
-            settings["MASTER_USER"]
-
+            settings["MASTER_USER"],
+        "USAGE_TYPE":
+            settings["USAGE_TYPE"]
     }
-
 
     if "ERROR" in settings:
 
@@ -243,6 +254,51 @@ def print_json(settings, setup_type):
             settings["ERROR"]
         )
 
+    print(
+        json.dumps(
+            response,
+            indent=4
+        )
+    )
+
+
+def print_cgi_json(settings, setup_type):
+    """
+    Display configuration information
+    in JSON format for Apache CGI.
+    """
+
+    response = {
+        "SETUP_TYPE": setup_type,
+        "MASTER_IP":
+            settings["MASTER_IP"],
+        "DATABASE":
+            settings["DATABASE"],
+        "MASTER_USER":
+            settings["MASTER_USER"],
+        "USAGE_TYPE":
+            settings["USAGE_TYPE"]
+    }
+
+    if "ERROR" in settings:
+
+        response["ERROR"] = (
+            settings["ERROR"]
+        )
+
+    #
+    # CGI response header.
+    #
+
+    print(
+        "Content-Type: application/json"
+    )
+
+    print()
+
+    #
+    # JSON response body.
+    #
 
     print(
         json.dumps(
@@ -260,6 +316,10 @@ def main():
         config_file
     )
 
+    #
+    # Determine setup type unless there
+    # was a configuration error.
+    #
 
     if "ERROR" in settings:
 
@@ -273,24 +333,21 @@ def main():
             settings
         )
 
-
     #
-    # JSON output requested.
+    # Browser / Apache CGI invocation.
     #
 
-    if len(sys.argv) > 1 and \
-       sys.argv[1] == "--json":
+    if "GATEWAY_INTERFACE" in os.environ:
 
-        print_json(
+        print_cgi_json(
             settings,
             setup_type
         )
 
         return
 
-
     #
-    # Default CLI output.
+    # Command-line invocation.
     #
 
     print_settings(

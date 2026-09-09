@@ -39,3 +39,11 @@ DATABASE=/mnt/stor1/Develop/Notes/musica.db
 # Add a new line with the users system id. For example:
 # MASTER_USER=<user_id-1>
 # MASTER_USER=<user_id-2>
+#
+# USAGE_TYPE is how Notes/Musica is being implemented. There are one of
+# two possible roles:
+# 1 - Commercial: Used by a business to track media inventory and POS
+#     information on checkout.
+# 2 - Personal: Used by an individual to curate/track recordings in thier
+#     personal collection.
+USAGE_TYPE=Personal
