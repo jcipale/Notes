@@ -27,6 +27,24 @@ class MusicaNotesHandler(
     SimpleHTTPRequestHandler
 ):
 
+    #def do_GET(self):
+    #
+    #   #
+    #   # API request:
+    #   #
+    #
+    #   if self.path == "/api/settings":
+
+    #       self.send_settings()
+
+    #       return
+
+        #
+        # All other requests are normal web files.
+        #
+
+    #   super().do_GET()
+
     def do_GET(self):
 
         #
@@ -41,11 +59,21 @@ class MusicaNotesHandler(
 
 
         #
+        # CGI compatibility request:
+        #
+
+        if self.path.startswith("/py/settings.py"):
+
+            self.send_settings()
+
+            return
+
+
+        #
         # All other requests are normal web files.
         #
 
         super().do_GET()
-
 
     def send_settings(self):
 

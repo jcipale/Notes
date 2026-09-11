@@ -10,6 +10,8 @@
 
     <title>Notes - Powered by Musica</title>
 
+    <!-- CSS Style Sheet boundary -->
+    
     <style>
 
         body {
@@ -160,7 +162,68 @@
             cursor: pointer;
         }
 
+        /* ============================================================
+                          AUTHENTICATION DIALOG — CSS
+           ============================================================ */
+ 
+        #auth-dialog {
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-dialog {
+            # background-color: #f4f4f4;
+            background-color: #d8c9a3;
+            padding: 25px;
+            border: 1px solid #777;
+            border-radius: 6px;
+            width: 420px;
+            max-width: 85%;
+        }
+
+        .auth-title {
+            text-align: center;
+            font-size: 1.25em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .auth-content {
+            width: 100%;
+        }
+
+        .auth-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .auth-row label {
+            width: 110px;
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        .auth-row input {
+            flex: 1;
+            padding: 6px;
+         }
+
+        .auth-attempt {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .auth-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
     </style>
+    
 </head>
 
 <body>
@@ -187,8 +250,32 @@
         <button class="menu-button">Search</button>
     </div>
     
-    <div class="menu-bar_2">
-        <button class="menu-button">Modify Record</button>
+    <div
+        id="editMenu"
+        class="menu-bar_2">
+
+        <button class="menu-button" onclick="modifyRecord()">
+            Modify Record 
+        </button>
+    </div>
+    
+    <div
+        id="editOptions"
+        class="menu-bar_2"
+        style="display: none;">
+
+        <button class="menu-button">
+            Add Record
+        </button>
+
+        <button class="menu-button">
+            Modify Record
+        </button>
+
+        <button class="menu-button">
+            Delete Record
+        </button>
+
     </div>
 
     <div
@@ -219,8 +306,74 @@
         </div>
     </div>
     
+   <!-- ============================================================
+                     AUTHENTICATION DIALOG — HTML
+        ============================================================ -->
+
+    <div id="auth-dialog" class="modal-overlay">
+
+    <div class="auth-dialog">
+
+        <div class="auth-title">
+            Data Access
+        </div>
+
+        <div class="auth-content">
+
+            <div class="auth-row">
+                <label for="master-user">
+                    Master User:
+                </label>
+
+                <input
+                    type="text"
+                    id="master-user"
+                    name="master-user"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="auth-row">
+                <label for="master-key">
+                    Master Key:
+                </label>
+
+                <input
+                    type="password"
+                    id="master-key"
+                    name="master-key"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div id="auth-attempt" class="auth-attempt">
+                Attempt 1 of 3
+            </div>
+
+        </div>
+
+        <div class="auth-buttons">
+
+            <button
+                type="button"
+                onclick="authenticateUser()">
+                Access
+            </button>
+
+            <button
+                type="button"
+                onclick="closeAuthentication()">
+                Cancel
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
     <script>
         function openSettings() {
+
             const modal =
                 document.getElementById(
                     "settingsModal"
@@ -240,16 +393,26 @@
                 "./py/settings.py?format=json"
             )
             .then(
-                response => response.json()
-            )
+                response => {
+                    console.log(
+                        "response:",
+                        response
+                    );
+
+                    return response.json();
+                 }
+             )
             .then(
                 settings => {
+                    usageType =
+                        settings.USAGE_TYPE || "";
+                        
                     displaySettings(
                         settings
-                    );
-                }
-            )
-
+                     );
+                 }
+             )
+                        
             .catch(
                 error => {
                     content.innerHTML =
@@ -361,6 +524,206 @@
 
             content.innerHTML = html;
         }
+        
+        /* ============================================================
+                   AUTHENTICATION DIALOG — JAVASCRIPT
+           ============================================================ */
+        let usageType = "";
+        
+        let accessState = "JAU";
+
+        let authAttempts = 1;
+        
+        function modifyRecord() {
+
+            if (usageType === "Personal") {
+                enterPU();
+                return;
+            }
+
+            if (usageType === "Commercial") {
+                openAuthentication();
+                return;
+            }
+
+            alert("Unable to determine Usage Type.");
+        }
+  
+        function enterPU() {
+
+            accessState = "PU";
+
+            document.getElementById("editMenu").style.display = "none";
+            document.getElementById("editOptions").style.display = "block";
+        }
+
+
+        function leavePU() {
+
+            accessState = "JAU";
+
+            document.getElementById("editOptions").style.display = "none";
+            document.getElementById("editMenu").style.display = "block";
+        }
+              
+        
+        function loadUsageType() {
+
+            fetch("./py/settings.py?format=json")
+                .then(
+                    response => response.json()
+                 )
+                .then(
+                    settings => {
+                        usageType = settings.USAGE_TYPE || "";
+                    }
+                 )
+                 .catch(
+                    error => {
+                        console.error(
+                            "Unable to load Usage Type:",
+                            error
+                        );
+                    }
+                );
+        }
+
+        function openAuthentication() {
+
+           authAttempts = 1;
+
+           document.getElementById("master-user").value = "";
+           document.getElementById("master-key").value = "";
+
+           document.getElementById("auth-attempt").textContent =
+               "Attempt 1 of 3";
+
+           document.getElementById("auth-dialog").style.display = "flex";
+
+           document.getElementById("master-user").focus();
+        }
+
+        function closeAuthentication() {
+
+            document.getElementById("auth-dialog").style.display = "none";
+
+            document.getElementById("master-user").value = "";
+            document.getElementById("master-key").value = "";
+        }
+
+        //function authenticateUser() {
+        //
+        //    const masterUser =
+        //    document.getElementById("master-user").value.trim();
+        //
+        //    const masterKey =
+        //    document.getElementById("master-key").value;
+        //
+        //    if (masterUser === "" || masterKey === "") {
+        //
+        //        alert("Master User and Master Key are required.");
+        //
+        //        return;
+        //    }
+        //    alert("Authentication backend not yet implemented.");
+        //}
+        
+        function authenticateUser() {
+
+        const masterUser =
+            document.getElementById("master-user").value.trim();
+
+        const masterKey =
+            document.getElementById("master-key").value;
+
+        if (masterUser === "" || masterKey === "") {
+
+            alert("Master User and Master Key are required.");
+
+            return;
+        }
+
+        const data =
+            new URLSearchParams();
+
+        data.append(
+            "master_user",
+             masterUser
+        );
+
+        data.append(
+            "master_key",
+            masterKey
+        );
+
+        fetch(
+            "./py/authenticate.py",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/x-www-form-urlencoded"
+                },
+                body: data
+            }
+        )
+        .then(
+            response => response.json()
+        )
+        .then(
+            result => {
+
+                if (result.authenticated) {
+
+                    enterPU();
+                    closeAuthentication();
+
+                    return;
+                }
+
+                authAttempts++;
+
+                if (authAttempts > 3) {
+
+                    alert(
+                        "Authentication failed. Access denied."
+                    );
+
+                    closeAuthentication();
+                    return;
+                }
+
+                document.getElementById(
+                    "auth-attempt"
+                ).textContent =
+                    "Attempt " +
+                    authAttempts +
+                " of 3";
+
+                document.getElementById(
+                    "master-key"
+                ).value = "";
+
+                document.getElementById(
+                   "master-key"
+                ).focus();
+            }
+        )
+        .catch(
+            error => {
+
+                console.error(
+                    "Authentication error:",
+                    error
+                    );
+
+                alert(
+                    "Unable to contact authentication service."
+                    );
+                }
+             );
+        }
+        
         window.onclick =
             function(event) {
                 const modal =
@@ -375,6 +738,8 @@
                 }
             };
 
+        loadUsageType();
+        
     </script>
 </body>
 </html>

@@ -17,7 +17,7 @@ MASTER_IP=192.168.0.47
 # usage, the database should be local to the Musica-Notes front-end.
 # To set the DATABASE field, edit the line below, pointing to the 
 # target database before uncommenting the line.
-DATABASE=/mnt/stor1/Develop/Notes/musica.db
+DATABASE=/home/joec/Musica/musica.db
 
 # NOTE - If this is a shared desktop and each user has their own musica
 # database, they SHOULD install a copy in their OWN user space so as not
@@ -39,6 +39,7 @@ DATABASE=/mnt/stor1/Develop/Notes/musica.db
 # Add a new line with the users system id. For example:
 # MASTER_USER=<user_id-1>
 # MASTER_USER=<user_id-2>
+MASTER_USER=beastmode
 #
 # USAGE_TYPE is how Notes/Musica is being implemented. There are one of
 # two possible roles:
