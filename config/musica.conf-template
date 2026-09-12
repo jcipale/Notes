@@ -36,7 +36,7 @@ MUSICA_LOG_FILE=${MUSICA_LOG_DIR}/musica.log
 # DATABASE SETTINGS (SQLite)
 # ----------------------------------------------------------------------
 MUSICA_DB_TYPE=sqlite
-MUSICA_DB_FILE=${MUSICA_DATA_DIR}/musica.db
+MUSICA_DB_FILE=${MUSICA_BASE_DIR}/musica.db
 
 # ----------------------------------------------------------------------
 # DEFAULT IMPORT/EXPORT FILENAMES
