@@ -135,7 +135,7 @@
             cursor: pointer;
         }
         
-        .menu-bar_1 {
+        .menu-bar_top {
              text-align: center;
              padding: 4px 20px;
              margin: 0;
@@ -144,7 +144,7 @@
              border-bottom: 3px solid #777;
         }
         
-        .menu-bar_2 {
+        .menu-bar_query {
              text-align: center;
              padding: 4px 20px;
              margin: 0;
@@ -222,6 +222,180 @@
             gap: 10px;
             margin-top: 20px;
         }
+
+        /* ============================================================
+                           QUERY DIALOG — CSS
+           ============================================================ */
+
+        #queryPanel {
+            display: none;
+            padding: 18px 24px 22px 24px;
+            background-color: #f4f4f4;
+            border-bottom: 3px solid #777;
+        }
+
+        .query-panel {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .query-title {
+            margin: 0 0 18px 0;
+            text-align: center;
+            font-size: 1.35em;
+            font-weight: bold;
+        }
+
+        .query-section {
+            margin-bottom: 18px;
+            padding: 14px 18px;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+            background-color: #ffffff;
+        }
+
+        .query-section-title {
+            margin: 0 0 12px 0;
+            font-weight: bold;
+        }
+
+        .query-row {
+            display: grid;
+            grid-template-columns: 72px 1fr;
+            align-items: center;
+            width: 100%;
+            margin: 0 0 10px 0;
+        }
+
+        .query-row label {
+            width: auto;
+            text-align: left;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .query-row input[type="text"] {
+            width: 100%;
+            padding: 7px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        .query-row-format {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .query-row-format > label {
+            width: 72px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .query-row-format select {
+            width: 130px;
+            padding: 7px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        .query-checks {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            margin: 0 0 0 18px;
+        }
+
+        .query-checks-vertical {
+            flex-direction: row;
+            align-items: center;
+            gap: 18px;
+            margin-left: 18px;
+        }
+
+        .query-check {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .query-display-grid {
+            display: grid;
+            grid-template-columns: auto auto;
+            justify-content: start;
+            gap: 10px 40px;
+            width: fit-content;
+            margin: 0;
+        }
+
+        .query-section.display-fields {
+            width: 430px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .query-section.display-fields .query-display-grid {
+            margin-left: 0;
+        }
+
+        @media (max-width: 650px) {
+            .query-section.display-fields {
+                width: auto;
+            }
+
+            .query-row {
+                grid-template-columns: 72px 1fr;
+            }
+
+            .query-row-format > label {
+                width: 72px;
+            }
+
+            .query-checks {
+                gap: 10px;
+                margin-left: 12px;
+            }
+        }
+
+        .query-actions {
+            text-align: center;
+            margin-top: 6px;
+        }
+
+        .query-actions button {
+            padding: 7px 18px;
+            margin: 0 5px;
+            font-size: 1em;
+            border: 1px solid #777;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .query-results {
+            margin-top: 18px;
+            overflow-x: auto;
+        }
+
+        .query-results-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .query-results table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+        }
+
+        .query-results th,
+        .query-results td {
+            border: 1px solid #999;
+            padding: 6px 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
     </style>
     
 </head>
@@ -245,14 +419,13 @@
 
     </header>
     
-    <div class="menu-bar_1">
-        <button class="menu-button">Query</button>
-        <button class="menu-button">Search</button>
+    <div class="menu-bar_top">
+        <button class="menu-button" onclick="openQuery()">Query</button>
     </div>
     
     <div
         id="editMenu"
-        class="menu-bar_2">
+        class="menu-bar_query">
 
         <button class="menu-button" onclick="modifyRecord()">
             Modify Record 
@@ -261,7 +434,7 @@
     
     <div
         id="editOptions"
-        class="menu-bar_2"
+        class="menu-bar_query"
         style="display: none;">
 
         <button class="menu-button">
@@ -276,6 +449,132 @@
             Delete Record
         </button>
 
+    </div>
+
+
+    <!-- ============================================================
+                           QUERY DIALOG — HTML
+         ============================================================ -->
+
+    <div id="queryPanel">
+        <div class="query-panel">
+
+            <div class="query-title">Query</div>
+
+            <div class="query-section">
+                <div class="query-section-title">Primary Search Keys</div>
+
+                <div class="query-row">
+                    <label for="query-artist">Artist:</label>
+                    <input type="text" id="query-artist" name="query-artist"
+                           autocomplete="off">
+                </div>
+
+                <div class="query-row">
+                    <label for="query-title">Title:</label>
+                    <input type="text" id="query-title" name="query-title"
+                           autocomplete="off">
+                </div>
+            </div>
+
+            <div class="query-section">
+                <div class="query-section-title">Secondary Search Parameters</div>
+
+                <div class="query-row">
+                    <label for="query-genre">Genre:</label>
+                    <input type="text" id="query-genre" name="query-genre"
+                           autocomplete="off">
+                </div>
+                <div class="query-row-format">
+                    <label for="query-format">Format:</label>
+                    <select id="query-format" name="query-format">
+                        <option value="">Any</option>
+                        <option value="LP">LP</option>
+                        <option value="CD">CD</option>
+                        <option value="Cass">Cassette</option>
+                        <option value="RTR">RTR</option>
+                        <option value="78">78 RPM</option>
+                        <option value="4T">4-track</option>
+                        <option value="8T">8-track</option>
+                    </select>
+
+                    <div class="query-checks">
+                        <label class="query-check">
+                            <input type="checkbox" id="query-reissue" name="query-reissue">
+                            Reissue
+                        </label>
+
+                        <label class="query-check">
+                            <input type="checkbox" id="query-dbx" name="query-dbx">
+                            DBX
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="query-section display-fields">
+                <div class="query-section-title">Optional Display Fields</div>
+
+                <div class="query-display-grid">
+                    <label class="query-check">
+                        <input type="checkbox" id="display-genre" name="display-genre">
+                        Genre
+                    </label>
+
+                    <label class="query-check">
+                        <input type="checkbox" id="display-year" name="display-year">
+                        Year
+                    </label>
+
+                    <label class="query-check">
+                        <input type="checkbox" id="display-reissue" name="display-reissue">
+                        Reissue
+                    </label>
+
+                    <label class="query-check">
+                        <input type="checkbox" id="display-dbx" name="display-dbx">
+                        DBX
+                    </label>
+
+                    <label class="query-check">
+                        <input type="checkbox" id="display-label" name="display-label">
+                        Label
+                    </label>
+
+                    <label class="query-check">
+                        <input type="checkbox" id="display-catalog-id" name="display-catalog-id">
+                        Catalog ID
+                    </label>
+                </div>
+            </div>
+
+            <div class="query-actions">
+                <button type="button" onclick="executeQuery()">Search</button>
+                <button type="button" onclick="clearQuery()">Clear</button>
+                <button type="button" onclick="closeQuery()">Close</button>
+            </div>
+
+            <div id="queryResults" class="query-results" style="display: none;">
+                <div class="query-results-title">Results</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rec ID</th>
+                            <th>Artist</th>
+                            <th>Title</th>
+                            <th>Genre</th>
+                            <th>Year</th>
+                            <th>Label</th>
+                            <th>Catalog ID</th>
+                            <th>Reissue</th>
+                            <th>DBX</th>
+                        </tr>
+                    </thead>
+                    <tbody id="queryResultsBody"></tbody>
+                </table>
+            </div>
+
+        </div>
     </div>
 
     <div
@@ -525,6 +824,47 @@
             content.innerHTML = html;
         }
         
+
+        /* ============================================================
+                           QUERY DIALOG — JAVASCRIPT
+           ============================================================ */
+
+        function openQuery() {
+            document.getElementById("queryPanel").style.display = "block";
+            document.getElementById("query-artist").focus();
+        }
+
+        function closeQuery() {
+            document.getElementById("queryPanel").style.display = "none";
+        }
+
+        function clearQuery() {
+            document.getElementById("query-artist").value = "";
+            document.getElementById("query-title").value = "";
+            document.getElementById("query-genre").value = "";
+            document.getElementById("query-format").value = "";
+            document.getElementById("query-reissue").checked = false;
+            document.getElementById("query-dbx").checked = false;
+
+            document.getElementById("display-genre").checked = false;
+            document.getElementById("display-year").checked = false;
+            document.getElementById("display-reissue").checked = false;
+            document.getElementById("display-dbx").checked = false;
+            document.getElementById("display-label").checked = false;
+            document.getElementById("display-catalog-id").checked = false;
+            document.getElementById("queryResultsBody").innerHTML = "";
+            document.getElementById("queryResults").style.display = "none";
+        }
+
+        function executeQuery() {
+            /*
+             * UI only for now.
+             * The API/SQL plumbing will be connected after the
+             * Query request/response contract is finalized.
+             */
+            alert("Query UI is ready. Database query service not yet connected.");
+        }
+
         /* ============================================================
                    AUTHENTICATION DIALOG — JAVASCRIPT
            ============================================================ */
