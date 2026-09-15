@@ -261,7 +261,7 @@
 
         .query-row {
             display: grid;
-            grid-template-columns: 72px 1fr;
+            grid-template-columns: 72px minmax(0, 1fr) auto;
             align-items: center;
             width: 100%;
             margin: 0 0 10px 0;
@@ -272,6 +272,12 @@
             text-align: left;
             margin-right: 10px;
             font-weight: bold;
+        }
+
+        .query-row .query-exact {
+            margin-left: 10px;
+            margin-right: 0;
+            font-weight: normal;
         }
 
         .query-row input[type="text"] {
@@ -396,6 +402,20 @@
             white-space: nowrap;
         }
 
+            .query-exact {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 10px;
+            white-space: nowrap;
+            font-weight: normal;
+            vertical-align: middle;
+        }
+
+        .query-exact input[type="checkbox"] {
+            margin: 0;
+        }
+
     </style>
     
 </head>
@@ -468,12 +488,20 @@
                     <label for="query-artist">Artist:</label>
                     <input type="text" id="query-artist" name="query-artist"
                            autocomplete="off">
+                    <label class="query-exact">
+                        <input type="checkbox" id="query-artist-exact" name="query-artist-exact">
+                        Exact
+                    </label>
                 </div>
 
                 <div class="query-row">
                     <label for="query-title">Title:</label>
                     <input type="text" id="query-title" name="query-title"
                            autocomplete="off">
+                    <label class="query-exact">
+                        <input type="checkbox" id="query-title-exact" name="query-title-exact">
+                        Exact
+                    </label>
                 </div>
             </div>
 
@@ -562,6 +590,7 @@
                             <th>Rec ID</th>
                             <th>Artist</th>
                             <th>Title</th>
+                            <th>Format</th>
                             <th>Genre</th>
                             <th>Year</th>
                             <th>Label</th>
@@ -840,7 +869,9 @@
 
         function clearQuery() {
             document.getElementById("query-artist").value = "";
+            document.getElementById("query-artist-exact").checked = false;
             document.getElementById("query-title").value = "";
+            document.getElementById("query-title-exact").checked = false;
             document.getElementById("query-genre").value = "";
             document.getElementById("query-format").value = "";
             document.getElementById("query-reissue").checked = false;
@@ -858,11 +889,140 @@
 
         function executeQuery() {
             /*
-             * UI only for now.
-             * The API/SQL plumbing will be connected after the
-             * Query request/response contract is finalized.
+             * PASS 1: Query construction only.
+             * Build the SQL statement and write it to the browser
+             * Console. No database connection or execution yet.
              */
-            alert("Query UI is ready. Database query service not yet connected.");
+
+            const artist =
+                document.getElementById("query-artist").value.trim();
+
+            const title =
+                document.getElementById("query-title").value.trim();
+
+            const genre =
+                document.getElementById("query-genre").value.trim();
+
+            const format =
+                document.getElementById("query-format").value;
+
+            const reissue =
+                document.getElementById("query-reissue").checked;
+
+            const dbx =
+                document.getElementById("query-dbx").checked;
+
+            /* --------------------------------------------------------
+               SELECT clause
+               -------------------------------------------------------- */
+
+            const columns = [
+                "id",
+                "artist",
+                "title",
+                "format"
+            ];
+
+            if (document.getElementById("display-genre").checked) {
+                columns.push("genre");
+            }
+
+            if (document.getElementById("display-year").checked) {
+                columns.push("year");
+            }
+
+            if (document.getElementById("display-reissue").checked) {
+                columns.push("reissue");
+            }
+
+            if (document.getElementById("display-dbx").checked) {
+                columns.push("dbx_encoded");
+            }
+
+            if (document.getElementById("display-label").checked) {
+                columns.push("label");
+            }
+
+            if (document.getElementById("display-catalog-id").checked) {
+                columns.push("catalog_number");
+            }
+
+            /* --------------------------------------------------------
+               WHERE clause
+               -------------------------------------------------------- */
+
+            const predicates = [];
+
+            function sqlQuote(value) {
+                return "'" + value.replace(/'/g, "''") + "'";
+            }
+
+            const artistExact =
+                document.getElementById("query-artist-exact").checked;
+
+            const titleExact =
+                document.getElementById("query-title-exact").checked;
+
+            if (artist !== "") {
+                if (artistExact) {
+                    predicates.push(
+                        "artist = " + sqlQuote(artist)
+                    );
+                } else {
+                    predicates.push(
+                        "artist LIKE " + sqlQuote("%" + artist + "%")
+                    );
+                }
+            }
+
+            if (title !== "") {
+                if (titleExact) {
+                    predicates.push(
+                        "title = " + sqlQuote(title)
+                    );
+                } else {
+                    predicates.push(
+                        "title LIKE " + sqlQuote("%" + title + "%")
+                    );
+                }
+            }
+
+            if (genre !== "") {
+                predicates.push(
+                    "genre = " + sqlQuote(genre)
+                );
+            }
+
+            if (format !== "") {
+                predicates.push(
+                    "format = " + sqlQuote(format)
+                );
+            }
+
+            if (reissue) {
+                predicates.push("reissue = 'Y'");
+            }
+
+            if (dbx) {
+                predicates.push("dbx_encoded = 'Y'");
+            }
+
+            /* --------------------------------------------------------
+               Assemble SQL
+               -------------------------------------------------------- */
+
+            let sql =
+                "SELECT " + columns.join(", ") +
+                " FROM recordings";
+
+            if (predicates.length > 0) {
+                sql += " WHERE " + predicates.join(" AND ");
+            }
+
+            sql += " ORDER BY artist ASC, year ASC;";
+
+            console.log("Musica Query:");
+            console.log(sql);
         }
 
         /* ============================================================
