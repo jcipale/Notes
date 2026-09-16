@@ -859,6 +859,19 @@
            ============================================================ */
 
         function openQuery() {
+
+            /*
+             * CHANGED: Returning to Query must close any
+             * outstanding Modify Record authentication dialog.
+             */
+
+            closeAuthentication();
+
+            document.getElementById("editOptions").style.display = "none";
+            document.getElementById("editMenu").style.display = "block";
+
+            accessState = "JAU";
+
             document.getElementById("queryPanel").style.display = "block";
             document.getElementById("query-artist").focus();
         }
@@ -1035,6 +1048,16 @@
         let authAttempts = 1;
         
         function modifyRecord() {
+
+            /*
+             * CHANGED: Query and Modify Record are mutually
+             * exclusive application modes. Hide the Query
+             * interface before entering Modify Record mode.
+             */
+
+            document.getElementById("queryPanel").style.display = "none";
+            document.getElementById("queryResultsBody").innerHTML = "";
+            document.getElementById("queryResults").style.display = "none";
 
             if (usageType === "Personal") {
                 enterPU();
@@ -1237,6 +1260,67 @@
                     closeSettings();
                 }
             };
+
+        /*
+         * CHANGED: A page reload starts a new Query state.
+         *
+         * Browsers may restore individual form controls after
+         * reload/navigation. Do not allow browser-restored Query
+         * state to become application state.
+         *
+         * Mode switching within the current page intentionally
+         * preserves Query state; this reset applies only at load.
+         */
+
+        function resetQueryOnLoad() {
+        
+        loadUsageType();
+            const queryFields = [
+                "query-artist",
+                "query-title",
+                "query-genre"
+            ];
+
+            queryFields.forEach(
+                id => {
+                    document.getElementById(id).value = "";
+                }
+            );
+
+            document.getElementById("query-format").value = "";
+
+            const queryChecks = [
+                "query-reissue",
+                "query-dbx",
+                "display-genre",
+                "display-year",
+                "display-reissue",
+                "display-dbx",
+                "display-label",
+                "display-catalog-id"
+            ];
+
+            queryChecks.forEach(
+                id => {
+                    document.getElementById(id).checked = false;
+                }
+            );
+
+            document.getElementById("queryResultsBody").innerHTML = "";
+            document.getElementById("queryResults").style.display = "none";
+        }
+
+        resetQueryOnLoad();
+        
+         /*
+         * CHANGED: Run the Query reset after the browser has
+         * restored any form-control state during page reload.
+         */
+
+        window.addEventListener(
+            "pageshow",
+            resetQueryOnLoad
+        );
 
         loadUsageType();
         

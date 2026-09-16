@@ -17,7 +17,9 @@ MASTER_IP=192.168.0.47
 # usage, the database should be local to the Musica-Notes front-end.
 # To set the DATABASE field, edit the line below, pointing to the 
 # target database before uncommenting the line.
-DATABASE=/home/joec/Musica/musica.db
+#DATABASE=/home/joec/Musica/musica.db
+DPATH=/home/joec/Musica
+DBASE=musica.db
 
 # NOTE - If this is a shared desktop and each user has their own musica
 # database, they SHOULD install a copy in their OWN user space so as not

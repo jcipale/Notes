@@ -51,6 +51,8 @@ def read_settings(config_file):
 
     settings = {
         "MASTER_IP": None,
+        "DPATH": None,
+        "DBASE": None,
         "DATABASE": None,
         "MASTER_USER": [],
         "USAGE_TYPE": None
@@ -108,9 +110,17 @@ def read_settings(config_file):
 
                     settings["MASTER_IP"] = value
 
-                elif key == "DATABASE":
+                #elif key == "DATABASE":
+                #
+                #    settings["DATABASE"] = value
 
-                    settings["DATABASE"] = value
+                elif key == "DPATH":
+
+                     settings["DPATH"] = value
+
+                elif key == "DBASE":
+
+                     settings["DBASE"] = value
 
                 elif key == "MASTER_USER":
 
@@ -121,6 +131,17 @@ def read_settings(config_file):
                 elif key == "USAGE_TYPE":
 
                     settings["USAGE_TYPE"] = value
+
+        #
+        # Construct the complete database path.
+        #
+
+        if settings["DPATH"] and settings["DBASE"]:
+
+            settings["DATABASE"] = os.path.join(
+                settings["DPATH"],
+                settings["DBASE"]
+            )
 
     except FileNotFoundError:
 
