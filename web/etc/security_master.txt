@@ -1,0 +1,14 @@
+# This is the master security key for the Commercial access for
+# musica-notes.com. The password is only required for Commercial
+# database access, such as a record store or other business.
+# Single-User or Private users have full access to search/modify
+# records within the database. The commercial security model is simple:
+# a) the MASTER_USER is ceated/assigned in the config.dta file. Each
+#    MASTER_USER will be given a unique name THAT IS NOT A SYSTEM NAME
+#    (i.e. their login name).
+# b) the master security key is one key for all MASTER_USER(s).
+#    The key should be changed every 90 days at a minimum.
+#
+# The Master Security Key file resides in /etc/security.txt on the
+# Domain Server
+#MASTER_KEY=<users_choice>
