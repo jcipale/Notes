@@ -1336,6 +1336,174 @@
 
             console.log("Musica Query:");
             console.log(sql);
+            
+            /*            
+            fetch("./py/server_query_api.py", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    sql: sql
+                })
+            })
+            */
+            
+            fetch("./py/server_query_api.py", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    sql: sql
+                })
+            })
+            .then(
+                response => {
+                    if (!response.ok) {
+                        throw new Error(
+                            "Query failed: HTTP " + response.status
+                        );
+                    }
+
+                    return response.json();
+                }
+            )
+            .then(
+                result => {
+                    if (result.error) {
+                        throw new Error(result.error);
+                    }
+
+                    displayQueryResults(result);
+                }
+            )
+            .catch(
+                error => {
+                    console.error(
+                        "Query error:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to execute query."
+                    );
+                }
+            );
+        }
+        
+        /* ============================================================
+        * Display Query Results
+        * ============================================================ */
+
+        /*
+        function displayQueryResults(result) {
+
+            const tbody =
+                document.getElementById("queryResultsBody");
+
+            tbody.innerHTML = "";
+            
+            document.getElementById("queryResults").style.display = "block";
+
+            result.rows.forEach(
+                row => {
+
+                    const tr =
+                        document.createElement("tr");
+
+                    row.forEach(
+                        value => {
+
+                            const td =
+                                document.createElement("td");
+
+                            td.textContent =
+                                value === null ? "" : value;
+
+                            tr.appendChild(td);
+                        }
+                    );
+
+                    tbody.appendChild(tr);
+                }  
+            );
+        }
+        */
+        
+        function displayQueryResults(result) {
+
+            const tbody =
+                document.getElementById("queryResultsBody");
+
+            const table =
+                document.querySelector("#queryResults table");
+
+            const headers =
+                table.querySelectorAll("thead th");
+
+            const columnNames = [
+                "id",
+                "artist",
+                "title",
+                "format",
+                "genre",
+                "year",
+                "label",
+                "catalog_number",
+                "reissue",
+                "dbx_encoded"
+            ];
+
+            /*
+             * Show only the columns returned by the query.
+            */
+
+            headers.forEach(
+                (header, index) => {
+
+                    if (result.columns.includes(columnNames[index])) {
+                        header.style.display = "";
+                    } else {
+                       header.style.display = "none";
+                    }
+                }
+            );
+
+            tbody.innerHTML = "";
+
+            document.getElementById("queryResults").style.display = "block";
+
+            result.rows.forEach(
+                row => {
+
+                    const tr =
+                        document.createElement("tr");
+
+                    row.forEach(
+                        (value, index) => {
+
+                            const td =
+                                document.createElement("td");
+
+                            td.textContent =
+                                value === null ? "" : value;
+
+                            tr.appendChild(td);
+                        }
+                    );
+
+                    /*
+                     * Hide cells belonging to columns that were
+                     * not requested.
+                     *
+                     * Row cells correspond only to returned columns,
+                     * so no cell hiding is required here.
+                     */
+
+                    tbody.appendChild(tr);
+                }
+            );
         }
 
         /* ============================================================
