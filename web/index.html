@@ -337,6 +337,32 @@
             box-sizing: border-box;
         }
 
+        .query-row-secondary {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0;
+            flex-wrap: wrap;
+        }
+
+        .query-row-secondary > label {
+            font-weight: bold;
+        }
+
+        .query-row-secondary select {
+            width: 130px;
+            padding: 7px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        .query-row-secondary .query-checks {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            margin-left: 8px;
+        }
+
         .query-checks {
             display: flex;
             gap: 18px;
@@ -694,13 +720,20 @@
             <div class="query-section">
                 <div class="query-section-title">Secondary Search Parameters</div>
 
-                <div class="query-row">
+                <div class="query-row-secondary">
                     <label for="query-genre">Genre:</label>
-                    <input type="text" id="query-genre" name="query-genre"
-                           autocomplete="off">
-                </div>
-                <div class="query-row-format">
+
+                    <select id="query-genre" name="query-genre">
+                        <option value="">Any</option>
+                        <option value="Jazz">Jazz</option>
+                        <option value="Rock">Rock</option>
+                        <option value="Country">Country</option>
+                        <option value="Classical">Classical</option>
+                        <option value="Symphonic">Symphonic</option>
+                    </select>
+
                     <label for="query-format">Format:</label>
+
                     <select id="query-format" name="query-format">
                         <option value="">Any</option>
                         <option value="LP">LP</option>
@@ -710,6 +743,15 @@
                         <option value="78">78 RPM</option>
                         <option value="4T">4-track</option>
                         <option value="8T">8-track</option>
+                    </select>
+
+                    <label for="query-mode">Mode:</label>
+
+                    <select id="query-mode" name="query-mode">
+                        <option value="">Any</option>
+                        <option value="S">Stereo</option>
+                        <option value="M">Mono</option>
+                        <option value="B">Both</option>
                     </select>
 
                     <div class="query-checks">
@@ -738,6 +780,11 @@
                     <label class="query-check">
                         <input type="checkbox" id="display-year" name="display-year">
                         Year
+                    </label>
+
+                    <label class="query-check">
+                        <input type="checkbox" id="display-mode" name="display-mode">
+                        Mode
                     </label>
 
                     <label class="query-check">
@@ -779,6 +826,7 @@
                             <th>Format</th>
                             <th>Genre</th>
                             <th>Year</th>
+                            <th>Mode</th>
                             <th>Label</th>
                             <th>Catalog ID</th>
                             <th>Reissue</th>
@@ -1244,6 +1292,10 @@
                 columns.push("year");
             }
 
+            if (document.getElementById("display-mode").checked) {
+                columns.push("recording_mode");
+            }
+
             if (document.getElementById("display-reissue").checked) {
                 columns.push("reissue");
             }
@@ -1312,12 +1364,29 @@
                 );
             }
 
+            const mode =
+                document.getElementById("query-mode").value;
+
+            if (mode !== "") {
+                predicates.push(
+                    "recording_mode = " + sqlQuote(mode)
+                );
+            }
+
+            const flagPredicates = [];
+
             if (reissue) {
-                predicates.push("reissue = 'Y'");
+                flagPredicates.push("reissue = 'Y'");
             }
 
             if (dbx) {
-                predicates.push("dbx_encoded = 'Y'");
+                flagPredicates.push("dbx_encoded = 'Y'");
+            }
+
+            if (flagPredicates.length > 0) {
+                predicates.push(
+                    "(" + flagPredicates.join(" OR ") + ")"
+                );
             }
 
             /* --------------------------------------------------------
@@ -1374,7 +1443,10 @@
                     if (result.error) {
                         throw new Error(result.error);
                     }
-
+                    
+                    console.log("RESULT COLUMNS:", result.columns);
+                    console.log("RESULT ROW:", result.rows[0]);
+        
                     displayQueryResults(result);
                 }
             )
@@ -1449,6 +1521,7 @@
                 "format",
                 "genre",
                 "year",
+                "recording_mode",
                 "label",
                 "catalog_number",
                 "reissue",
@@ -1474,37 +1547,42 @@
 
             document.getElementById("queryResults").style.display = "block";
 
-            result.rows.forEach(
-                row => {
+            
+                /*-----------
+                Change to correct incorrect query printing results. 
+                -------------*/
+                result.rows.forEach(
+                    row => {
+                        const tr =
+                            document.createElement("tr");
+                        
+                        columnNames.forEach(
+                            columnName => {
 
-                    const tr =
-                        document.createElement("tr");
+                                if (!result.columns.includes(columnName)) {
+                                    return;
+                                }
 
-                    row.forEach(
-                        (value, index) => {
+                                const resultIndex =
+                                    result.columns.indexOf(columnName);
+                                    
+                                const td =
+                                    document.createElement("td");
+                                
+                                td.textContent =
+                                    row[resultIndex] === null
+                                        ? ""
+                                        : row[resultIndex];
 
-                            const td =
-                                document.createElement("td");
-
-                            td.textContent =
-                                value === null ? "" : value;
-
-                            tr.appendChild(td);
-                        }
-                    );
-
-                    /*
-                     * Hide cells belonging to columns that were
-                     * not requested.
-                     *
-                     * Row cells correspond only to returned columns,
-                     * so no cell hiding is required here.
-                     */
-
-                    tbody.appendChild(tr);
-                }
-            );
+                                tr.appendChild(td);
+                            }
+                        );
+                    
+                        tbody.appendChild(tr);
+                    }
+                );
         }
+        
 
         /* ============================================================
                    AUTHENTICATION DIALOG — JAVASCRIPT
@@ -1761,6 +1839,7 @@
                 "query-dbx",
                 "display-genre",
                 "display-year",
+                "display-mode",
                 "display-reissue",
                 "display-dbx",
                 "display-label",
