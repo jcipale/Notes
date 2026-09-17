@@ -51,16 +51,28 @@ def execute_query(sql):
     # Locate the configured Musica database.
     #
 
-    db_path = (
-        settings.get("MUSICA_DB")
-        or settings.get("DATABASE")
-        or settings.get("DB_PATH")
-    )
+    #db_path = (
+    #    settings.get("MUSICA_DB")
+    #    or settings.get("DATABASE")
+    #    or settings.get("DB_PATH")
+    #)
 
-    if not db_path:
+    db_path = os.path.join(
+        os.path.expanduser(
+            settings.get("DPATH", "")
+        ),
+        settings.get("DBASE", "")
+)
 
-        return None, "Musica database path is not configured."
+    #if not db_path:
+    #
+    #    return None, "Musica database path is not configured."
 
+    if not settings.get("DPATH"):
+        return None, "DPATH is not configured."
+
+    if not settings.get("DBASE"):
+        return None, "DBASE is not configured."
 
     #
     # Execute the SQL query.
@@ -98,6 +110,255 @@ def execute_query(sql):
         }, None
 
     except sqlite3.Error as error:
+
+        if connection is not None:
+
+            connection.close()
+
+        return None, str(error)
+
+
+# CHANGED: Shared SQLite Add implementation.
+#
+# The web Add operation performs the same database INSERT as
+# musica_db_add_recording_sqlite.py, but directly through SQLite.
+# HTTP and CGI execution both use this function.
+#
+def execute_add(record):
+
+    # CHANGED: Resolve the database exactly as defined by config.dta.
+    #
+    # DPATH identifies the Musica data directory and DBASE identifies
+    # the database file.
+    #
+
+    config_file = get_config_path()
+
+    settings = read_settings(
+        config_file
+    )
+
+    if "ERROR" in settings:
+
+        return None, settings["ERROR"]
+
+    db_path = os.path.join(
+        os.path.expanduser(
+            settings.get(
+                "DPATH",
+                ""
+            )
+        ),
+        settings.get(
+            "DBASE",
+            ""
+        )
+    )
+
+    if not settings.get("DPATH"):
+
+        return None, "DPATH is not configured."
+
+    if not settings.get("DBASE"):
+
+        return None, "DBASE is not configured."
+
+    if not isinstance(
+        record,
+        dict
+    ):
+
+        return None, "Missing record data."
+
+    required = (
+        "artist",
+        "title",
+        "year",
+        "genre",
+        "format"
+    )
+
+    for field in required:
+
+        value = record.get(
+            field
+        )
+
+        if value is None or str(value).strip() == "":
+
+            return None, (
+                "Missing required field: "
+                + field
+            )
+
+    try:
+
+        year = int(
+            record["year"]
+        )
+
+    except (
+        TypeError,
+        ValueError
+    ):
+
+        return None, "Invalid year."
+
+    if year < 1900:
+
+        return None, "Year must be >= 1900."
+
+    def optional_text(value):
+
+        if value is None:
+
+            return None
+
+        value = str(
+            value
+        ).strip()
+
+        return value if value else None
+
+    artist = str(
+        record["artist"]
+    ).strip()
+
+    title = str(
+        record["title"]
+    ).strip()
+
+    genre = str(
+        record["genre"]
+    ).strip()
+
+    fmt = str(
+        record["format"]
+    ).strip()
+
+    composer = optional_text(
+        record.get("composer")
+    )
+
+    orchestra = optional_text(
+        record.get("orchestra")
+    )
+
+    conductor = optional_text(
+        record.get("conductor")
+    )
+
+    label = optional_text(
+        record.get("label")
+    )
+
+    catalog = optional_text(
+        record.get("catalog_number")
+    )
+
+    # CHANGED: Classical and Symphonic both support
+    # Composer, Orchestra, and Conductor.
+    if genre not in (
+        "Classical",
+        "Symphonic"
+    ):
+
+        composer = None
+        orchestra = None
+        conductor = None
+
+    recording_mode = optional_text(
+        record.get("recording_mode")
+    )
+
+    if recording_mode not in (
+        "M",
+        "S",
+        "B"
+    ):
+
+        return None, "Invalid recording mode."
+
+    reissue = (
+        "Y"
+        if record.get("reissue")
+        else None
+    )
+
+    dbx_encoded = (
+        "Y"
+        if record.get("dbx_encoded")
+        else None
+    )
+
+    sql = """
+    INSERT INTO recordings (
+        artist, title, year,
+        composer, orchestra, conductor,
+        genre, format,
+        label, catalog_number,
+        recording_mode, reissue, dbx_encoded
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+
+    connection = None
+
+    try:
+
+        connection = sqlite3.connect(
+            os.path.expanduser(
+                db_path
+            )
+        )
+
+        connection.execute(
+            "PRAGMA foreign_keys=ON;"
+        )
+
+        connection.execute(
+            "PRAGMA busy_timeout=5000;"
+        )
+
+        cursor = connection.cursor()
+
+        cursor.execute(
+            sql,
+            (
+                artist,
+                title,
+                year,
+                composer,
+                orchestra,
+                conductor,
+                genre,
+                fmt,
+                label,
+                catalog,
+                recording_mode,
+                reissue,
+                dbx_encoded
+            )
+        )
+
+        connection.commit()
+
+        record_id = cursor.lastrowid
+
+        connection.close()
+
+        return {
+            "id": record_id
+        }, None
+
+    except sqlite3.IntegrityError as error:
+
+        if connection is not None:
+
+            connection.close()
+
+        return None, str(error)
+
+    except sqlite3.OperationalError as error:
 
         if connection is not None:
 
@@ -167,6 +428,19 @@ class MusicaNotesHandler(
         if self.path == "/api/query":
 
             self.send_query()
+
+
+            return
+
+
+        # CHANGED: Add Record API request.
+
+        if self.path == "/api/add":
+
+            self.send_add()
+
+            return
+
     
             return
 
@@ -190,6 +464,124 @@ class MusicaNotesHandler(
             404,
             "Not Found"
         )
+
+    # CHANGED: Handle a structured Add Record request.
+    #
+    # The browser supplies record data, not SQL. This keeps the
+    # database mutation under server-side control.
+    #
+    def send_add(self):
+
+        content_length = self.headers.get(
+            "Content-Length"
+        )
+
+        if content_length is None:
+
+            self.send_json_error(
+                400,
+                "Missing Content-Length"
+            )
+
+            return
+
+        try:
+
+            length = int(
+                content_length
+            )
+
+        except ValueError:
+
+            self.send_json_error(
+                400,
+                "Invalid Content-Length"
+            )
+
+            return
+
+        try:
+
+            body = self.rfile.read(
+                length
+            )
+
+            request = json.loads(
+                body.decode(
+                    "utf-8"
+                )
+            )
+
+        except (
+            UnicodeDecodeError,
+            json.JSONDecodeError
+        ):
+
+            self.send_json_error(
+                400,
+                "Invalid JSON"
+            )
+
+            return
+
+        if request.get(
+            "operation"
+        ) != "add":
+
+            self.send_json_error(
+                400,
+                "Invalid Add operation."
+            )
+
+            return
+
+        result, error = execute_add(
+            request.get(
+                "record"
+            )
+        )
+
+        if error is not None:
+
+            self.send_json_error(
+                400,
+                error
+            )
+
+            return
+
+        response = json.dumps(
+            result
+        )
+
+        self.send_response(
+            200
+        )
+
+        self.send_header(
+            "Content-Type",
+            "application/json"
+        )
+
+        self.send_header(
+            "Content-Length",
+            str(
+                len(
+                    response.encode(
+                        "utf-8"
+                    )
+                )
+            )
+        )
+
+        self.end_headers()
+
+        self.wfile.write(
+            response.encode(
+                "utf-8"
+            )
+        )
+
 
     def send_query(self):
 
@@ -582,6 +974,56 @@ def run_cgi():
         print(
             "Status: 400"
         )
+        print(
+            "Content-Type: application/json"
+        )
+        print()
+        print(
+            response
+        )
+
+        return
+
+
+    #
+    # CHANGED: CGI Add Record request.
+    #
+
+    if request.get(
+        "operation"
+    ) == "add":
+
+        result, error = execute_add(
+            request.get(
+                "record"
+            )
+        )
+
+        if error is not None:
+
+            response = json.dumps(
+                {
+                    "error": error
+                }
+            )
+
+            print(
+                "Status: 400"
+            )
+            print(
+                "Content-Type: application/json"
+            )
+            print()
+            print(
+                response
+            )
+
+            return
+
+        response = json.dumps(
+            result
+        )
+
         print(
             "Content-Type: application/json"
         )

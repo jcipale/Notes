@@ -287,6 +287,37 @@
             box-sizing: border-box;
         }
 
+        /* CHANGED: Year, Genre, and Format share one row.
+         * Keep Year narrow and use the existing dropdown widths. */
+        .add-year-genre-format-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .add-year-genre-format-row label {
+            font-weight: bold;
+        }
+
+        .add-year-genre-format-row #add-year {
+            width: 80px;
+            padding: 7px;
+            box-sizing: border-box;
+        }
+
+        .add-year-genre-format-row #add-genre {
+            width: 130px;
+            padding: 7px;
+            box-sizing: border-box;
+        }
+
+        .add-year-genre-format-row #add-format {
+            width: 110px;
+            padding: 7px;
+            box-sizing: border-box;
+        }
+
         .query-row-format {
             display: flex;
             align-items: center;
@@ -457,7 +488,7 @@
         class="menu-bar_query"
         style="display: none;">
 
-        <button class="menu-button">
+        <button class="menu-button" onclick="openAdd()">
             Add Record
         </button>
 
@@ -468,6 +499,161 @@
         <button class="menu-button">
             Delete Record
         </button>
+
+    </div>
+
+
+    <!-- ============================================================
+                         ADD RECORD DIALOG — HTML
+         ============================================================ -->
+
+    <div
+        id="addPanel"
+        style="display: none;">
+
+        <div class="query-panel">
+
+            <div class="query-title">Add Record</div>
+
+            <div class="query-section">
+
+                <div class="query-section-title">Primary Information</div>
+
+                <div class="query-row">
+                    <label for="add-artist">Artist:</label>
+                    <input type="text" id="add-artist" name="add-artist"
+                           autocomplete="off">
+                </div>
+
+                <div class="query-row">
+                    <label for="add-title">Title:</label>
+                    <input type="text" id="add-title" name="add-title"
+                           autocomplete="off">
+                </div>
+
+                <!-- CHANGED: Year, Genre, and Format share one row.
+                     Year is deliberately narrow; both dropdowns retain
+                     fixed widths appropriate to their contents. -->
+                <div class="add-year-genre-format-row">
+                    <label for="add-year">Year:</label>
+                    <input type="text" id="add-year" name="add-year"
+                           autocomplete="off">
+
+                    <label for="add-genre">Genre:</label>
+                    <select id="add-genre" name="add-genre"
+                            onchange="updateAddGenreFields()">
+                        <option value="">Select</option>
+                        <option value="Jazz">Jazz</option>
+                        <option value="Rock">Rock</option>
+                        <option value="Country">Country</option>
+                        <option value="Classical">Classical</option>
+                        <option value="Symphonic">Symphonic</option>
+                    </select>
+
+                    <label for="add-format">Format:</label>
+                    <select id="add-format" name="add-format">
+                        <option value="">Select</option>
+                        <option value="LP">LP</option>
+                        <option value="CD">CD</option>
+                        <option value="Cass">Cassette</option>
+                        <option value="RTR">RTR</option>
+                        <option value="78">78 RPM</option>
+                        <option value="4T">4-track</option>
+                        <option value="8T">8-track</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="query-section">
+
+                <div class="query-section-title">Recording Information</div>
+
+                <div class="query-row">
+                    <label for="add-mode">Recording Mode:</label>
+                    <select id="add-mode" name="add-mode">
+                        <option value="">Select</option>
+                        <option value="S">Stereo</option>
+                        <option value="M">Mono</option>
+                        <option value="B">Both</option>
+                    </select>
+                </div>
+
+                <div class="query-checks">
+
+                    <label class="query-check">
+                        <input type="checkbox" id="add-reissue"
+                               name="add-reissue">
+                        Reissue
+                    </label>
+
+                    <label class="query-check">
+                        <input type="checkbox" id="add-dbx"
+                               name="add-dbx">
+                        DBX
+                    </label>
+
+                </div>
+
+            </div>
+
+            <div class="query-section">
+
+                <div class="query-section-title">Publication Information</div>
+
+                <div class="query-row">
+                    <label for="add-label">Label:</label>
+                    <input type="text" id="add-label" name="add-label"
+                           autocomplete="off">
+                </div>
+
+                <div class="query-row">
+                    <label for="add-catalog">Catalog Number:</label>
+                    <input type="text" id="add-catalog" name="add-catalog"
+                           autocomplete="off">
+                </div>
+
+            </div>
+
+            <div
+                id="addSymphonicSection"
+                class="query-section"
+                style="display: none;">
+
+                <div class="query-section-title">Classical / Symphonic Information</div>
+
+                <div class="query-row">
+                    <label for="add-composer">Composer:</label>
+                    <input type="text" id="add-composer" name="add-composer"
+                           autocomplete="off">
+                </div>
+
+                <div class="query-row">
+                    <label for="add-orchestra">Orchestra:</label>
+                    <input type="text" id="add-orchestra" name="add-orchestra"
+                           autocomplete="off">
+                </div>
+
+                <div class="query-row">
+                    <label for="add-conductor">Conductor:</label>
+                    <input type="text" id="add-conductor" name="add-conductor"
+                           autocomplete="off">
+                </div>
+
+            </div>
+
+            <div class="query-actions">
+
+                <!-- CHANGED: First-pass UI only. Database insertion
+                     will be wired after the form is reviewed. -->
+
+                <button type="button">Add</button>
+                <button type="button" onclick="clearAddForm()">Clear</button>
+                <button type="button" onclick="closeAdd()">Cancel</button>
+
+            </div>
+
+        </div>
 
     </div>
 
@@ -857,6 +1043,120 @@
         /* ============================================================
                            QUERY DIALOG — JAVASCRIPT
            ============================================================ */
+
+        function resetAddForm() {
+
+            /*
+             * CHANGED: Add Record is intentionally non-persistent.
+             * Reset all Add fields every time the dialog is entered,
+             * preventing browser-restored values from being reused.
+             */
+
+            const addFields = [
+                "add-artist",
+                "add-title",
+                "add-year",
+                "add-genre",
+                "add-format",
+                "add-mode",
+                "add-label",
+                "add-catalog"
+            ];
+
+            addFields.forEach(
+                id => {
+                    document.getElementById(id).value = "";
+                }
+            );
+
+            const addChecks = [
+                "add-reissue",
+                "add-dbx"
+            ];
+
+            addChecks.forEach(
+                id => {
+                    document.getElementById(id).checked = false;
+                }
+            );
+
+            document.getElementById("addSymphonicSection").style.display = "none";
+        }
+
+
+        function clearAddForm() {
+
+            /* CHANGED: Provide an in-dialog way to discard entered
+             * Add Record data without reloading the page (which would
+             * also discard the current authenticated session). */
+
+            resetAddForm();
+            document.getElementById("add-artist").focus();
+        }
+
+
+        function openAdd() {
+
+            /*
+             * CHANGED: Enter Add Record mode.
+             * Query and authentication interfaces are hidden.
+             * Database insertion is intentionally not implemented
+             * in this first-pass form.
+             */
+
+            resetAddForm();
+
+            closeAuthentication();
+
+            document.getElementById("queryPanel").style.display = "none";
+            document.getElementById("queryResults").style.display = "none";
+            document.getElementById("editOptions").style.display = "none";
+            document.getElementById("editMenu").style.display = "block";
+            document.getElementById("addPanel").style.display = "block";
+
+            document.getElementById("add-artist").focus();
+        }
+
+
+        function closeAdd() {
+
+            /*
+             * CHANGED: Leave Add Record mode and return to the
+             * normal Modify Record menu state.
+             */
+
+            document.getElementById("addPanel").style.display = "none";
+            document.getElementById("editOptions").style.display = "block";
+            document.getElementById("editMenu").style.display = "none";
+        }
+
+
+        function updateAddGenreFields() {
+
+            /*
+             * CHANGED: Conductor applies to BOTH Classical and
+             * Symphonic recordings. Composer and Orchestra remain
+             * associated with the Symphonic/Classical section for
+             * this first-pass UI and can be refined during review.
+             */
+
+            const genre = document.getElementById("add-genre").value
+                .trim()
+                .toLowerCase();
+
+            const section =
+                document.getElementById("addSymphonicSection");
+
+            if (
+                genre === "classical" ||
+                genre === "symphonic"
+            ) {
+                section.style.display = "block";
+            } else {
+                section.style.display = "none";
+            }
+        }
+
 
         function openQuery() {
 
@@ -1273,8 +1573,7 @@
          */
 
         function resetQueryOnLoad() {
-        
-        loadUsageType();
+
             const queryFields = [
                 "query-artist",
                 "query-title",
@@ -1311,15 +1610,10 @@
         }
 
         resetQueryOnLoad();
-        
-         /*
-         * CHANGED: Run the Query reset after the browser has
-         * restored any form-control state during page reload.
-         */
 
-        window.addEventListener(
-            "pageshow",
-            resetQueryOnLoad
+        document.getElementById("add-genre").addEventListener(
+            "input",
+            updateAddGenreFields
         );
 
         loadUsageType();
