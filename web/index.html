@@ -385,11 +385,19 @@
 
         .query-display-grid {
             display: grid;
-            grid-template-columns: auto auto;
+            grid-template-columns: repeat(3, auto);
             justify-content: start;
             gap: 10px 40px;
             width: fit-content;
             margin: 0;
+        }
+
+        .query-classical-fields {
+            display: flex;
+            gap: 24px;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid #ccc;
         }
 
         .query-section.display-fields {
@@ -723,7 +731,8 @@
                 <div class="query-row-secondary">
                     <label for="query-genre">Genre:</label>
 
-                    <select id="query-genre" name="query-genre">
+                    <select id="query-genre" name="query-genre"
+                        onchange="updateQueryGenreFields()">
                         <option value="">Any</option>
                         <option value="Jazz">Jazz</option>
                         <option value="Rock">Rock</option>
@@ -766,49 +775,61 @@
                         </label>
                     </div>
                 </div>
-            </div>
+                
+                <div id="query-classical-fields" class="query-classical-fields" style="display: none;">
 
-            <div class="query-section display-fields">
-                <div class="query-section-title">Optional Display Fields</div>
-
-                <div class="query-display-grid">
                     <label class="query-check">
-                        <input type="checkbox" id="display-genre" name="display-genre">
-                        Genre
+                        <input type="checkbox"
+                            id="display-composer"
+                            name="display-composer">
+                        Composer
                     </label>
 
                     <label class="query-check">
-                        <input type="checkbox" id="display-year" name="display-year">
+                        <input type="checkbox"
+                            id="display-orchestra"
+                            name="display-orchestra">
+                        Orchestra
+                    </label>
+
+                    <label class="query-check">
+                        <input type="checkbox"
+                            id="display-conductor"
+                            name="display-conductor">
+                        Conductor
+                    </label>
+
+                </div>
+            </div>
+
+            <div class="query-section display-fields">
+                <div class="query-section-title">Extended Display Fields</div>
+
+                <div class="query-display-grid">
+
+                    <label class="query-check">
+                        <input type="checkbox"
+                            id="display-year"
+                            name="display-year">
                         Year
                     </label>
 
                     <label class="query-check">
-                        <input type="checkbox" id="display-mode" name="display-mode">
-                        Mode
-                    </label>
-
-                    <label class="query-check">
-                        <input type="checkbox" id="display-reissue" name="display-reissue">
-                        Reissue
-                    </label>
-
-                    <label class="query-check">
-                        <input type="checkbox" id="display-dbx" name="display-dbx">
-                        DBX
-                    </label>
-
-                    <label class="query-check">
-                        <input type="checkbox" id="display-label" name="display-label">
+                        <input type="checkbox"
+                            id="display-label"
+                            name="display-label">
                         Label
                     </label>
 
                     <label class="query-check">
-                        <input type="checkbox" id="display-catalog-id" name="display-catalog-id">
+                        <input type="checkbox"
+                            id="display-catalog-id"
+                            name="display-catalog-id">
                         Catalog ID
                     </label>
                 </div>
             </div>
-
+            
             <div class="query-actions">
                 <button type="button" onclick="executeQuery()">Search</button>
                 <button type="button" onclick="clearQuery()">Clear</button>
@@ -1205,7 +1226,27 @@
             }
         }
 
+        /* New function for classical/symphonic check box */        
+        function updateQueryGenreFields() {
 
+            const genre = document.getElementById("query-genre").value
+                .trim()
+                .toLowerCase();
+
+            const section =
+                document.getElementById("query-classical-fields");
+
+            if (
+                genre === "classical" ||
+                genre === "symphonic"
+            ) {
+                section.style.display = "flex";
+            } else {
+                section.style.display = "none";
+            }
+        }
+        /* End new code */
+        
         function openQuery() {
 
             /*
@@ -1237,11 +1278,7 @@
             document.getElementById("query-format").value = "";
             document.getElementById("query-reissue").checked = false;
             document.getElementById("query-dbx").checked = false;
-
-            document.getElementById("display-genre").checked = false;
             document.getElementById("display-year").checked = false;
-            document.getElementById("display-reissue").checked = false;
-            document.getElementById("display-dbx").checked = false;
             document.getElementById("display-label").checked = false;
             document.getElementById("display-catalog-id").checked = false;
             document.getElementById("queryResultsBody").innerHTML = "";
@@ -1284,24 +1321,14 @@
                 "format"
             ];
 
+            /*
             if (document.getElementById("display-genre").checked) {
                 columns.push("genre");
             }
+            */
 
             if (document.getElementById("display-year").checked) {
                 columns.push("year");
-            }
-
-            if (document.getElementById("display-mode").checked) {
-                columns.push("recording_mode");
-            }
-
-            if (document.getElementById("display-reissue").checked) {
-                columns.push("reissue");
-            }
-
-            if (document.getElementById("display-dbx").checked) {
-                columns.push("dbx_encoded");
             }
 
             if (document.getElementById("display-label").checked) {
@@ -1467,41 +1494,6 @@
         /* ============================================================
         * Display Query Results
         * ============================================================ */
-
-        /*
-        function displayQueryResults(result) {
-
-            const tbody =
-                document.getElementById("queryResultsBody");
-
-            tbody.innerHTML = "";
-            
-            document.getElementById("queryResults").style.display = "block";
-
-            result.rows.forEach(
-                row => {
-
-                    const tr =
-                        document.createElement("tr");
-
-                    row.forEach(
-                        value => {
-
-                            const td =
-                                document.createElement("td");
-
-                            td.textContent =
-                                value === null ? "" : value;
-
-                            tr.appendChild(td);
-                        }
-                    );
-
-                    tbody.appendChild(tr);
-                }  
-            );
-        }
-        */
         
         function displayQueryResults(result) {
 
@@ -1679,23 +1671,6 @@
             document.getElementById("master-user").value = "";
             document.getElementById("master-key").value = "";
         }
-
-        //function authenticateUser() {
-        //
-        //    const masterUser =
-        //    document.getElementById("master-user").value.trim();
-        //
-        //    const masterKey =
-        //    document.getElementById("master-key").value;
-        //
-        //    if (masterUser === "" || masterKey === "") {
-        //
-        //        alert("Master User and Master Key are required.");
-        //
-        //        return;
-        //    }
-        //    alert("Authentication backend not yet implemented.");
-        //}
         
         function authenticateUser() {
 
@@ -1837,11 +1812,7 @@
             const queryChecks = [
                 "query-reissue",
                 "query-dbx",
-                "display-genre",
                 "display-year",
-                "display-mode",
-                "display-reissue",
-                "display-dbx",
                 "display-label",
                 "display-catalog-id"
             ];
@@ -1858,6 +1829,7 @@
 
         resetQueryOnLoad();
 
+        /* remove this code */        
         document.getElementById("add-genre").addEventListener(
             "input",
             updateAddGenreFields
