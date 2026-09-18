@@ -392,12 +392,24 @@
             margin: 0;
         }
 
+        /*
+         * CHANGED: Classical/Symphonic fields are search inputs, not
+         * display checkboxes. They use the same grid structure as the
+         * Artist and Title primary search rows.
+         */
+         
         .query-classical-fields {
-            display: flex;
-            gap: 24px;
-            margin-top: 6px;
-            padding-top: 6px;
-            border-top: 1px solid #ccc;
+            display: none;
+            margin-top: 10px;
+        }
+
+        /*
+         * CHANGED: Each Classical/Symphonic search criterion occupies
+         * its own complete row, matching Artist and Title above.
+         */
+         
+        .query-classical-fields .query-row {
+            margin-bottom: 10px;
         }
 
         .query-section.display-fields {
@@ -568,6 +580,7 @@
                 <!-- CHANGED: Year, Genre, and Format share one row.
                      Year is deliberately narrow; both dropdowns retain
                      fixed widths appropriate to their contents. -->
+                     
                 <div class="add-year-genre-format-row">
                     <label for="add-year">Year:</label>
                     <input type="text" id="add-year" name="add-year"
@@ -723,6 +736,67 @@
                         Exact
                     </label>
                 </div>
+
+                <!--
+                 * CHANGED: Classical/Symphonic search fields now belong
+                 * with the other Primary Search Keys because Composer,
+                 * Orchestra, and Conductor are independent text-search
+                 * criteria. The block remains hidden unless Genre is
+                 * Classical or Symphonic.
+                 -->
+                 
+                <div id="query-classical-fields"
+                     class="query-classical-fields"
+                     style="display: none;">
+
+                    <!--
+                     * CHANGED: Each field gets its own row. The order is
+                     * Composer, Conductor, Orchestra, following Artist
+                     * and Title in the Primary Search Keys section.
+                     -->
+
+                    <div class="query-row">
+                        <label for="query-composer">Composer:</label>
+                        <input type="text"
+                               id="query-composer"
+                               name="query-composer"
+                               autocomplete="off">
+                        <label class="query-exact">
+                            <input type="checkbox"
+                                   id="query-composer-exact"
+                                   name="query-composer-exact">
+                            Exact
+                        </label>
+                    </div>
+
+                    <div class="query-row">
+                        <label for="query-conductor">Conductor:</label>
+                        <input type="text"
+                               id="query-conductor"
+                               name="query-conductor"
+                               autocomplete="off">
+                        <label class="query-exact">
+                            <input type="checkbox"
+                                   id="query-conductor-exact"
+                                   name="query-conductor-exact">
+                            Exact
+                        </label>
+                    </div>
+
+                    <div class="query-row">
+                        <label for="query-orchestra">Orchestra:</label>
+                        <input type="text"
+                               id="query-orchestra"
+                               name="query-orchestra"
+                               autocomplete="off">
+                        <label class="query-exact">
+                            <input type="checkbox"
+                                   id="query-orchestra-exact"
+                                   name="query-orchestra-exact">
+                            Exact
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <div class="query-section">
@@ -775,31 +849,6 @@
                         </label>
                     </div>
                 </div>
-                
-                <div id="query-classical-fields" class="query-classical-fields" style="display: none;">
-
-                    <label class="query-check">
-                        <input type="checkbox"
-                            id="display-composer"
-                            name="display-composer">
-                        Composer
-                    </label>
-
-                    <label class="query-check">
-                        <input type="checkbox"
-                            id="display-orchestra"
-                            name="display-orchestra">
-                        Orchestra
-                    </label>
-
-                    <label class="query-check">
-                        <input type="checkbox"
-                            id="display-conductor"
-                            name="display-conductor">
-                        Conductor
-                    </label>
-
-                </div>
             </div>
 
             <div class="query-section display-fields">
@@ -844,6 +893,9 @@
                             <th>Rec ID</th>
                             <th>Artist</th>
                             <th>Title</th>
+                            <th>Composer</th>
+                            <th>Conductor</th>
+                            <th>Orchestra</th>
                             <th>Format</th>
                             <th>Genre</th>
                             <th>Year</th>
@@ -1226,7 +1278,11 @@
             }
         }
 
-        /* New function for classical/symphonic check box */        
+        /*
+         * CHANGED: Show the Classical/Symphonic primary search fields
+         * only when their Genre is selected. These fields are search
+         * criteria, not display-field selections.
+         */
         function updateQueryGenreFields() {
 
             const genre = document.getElementById("query-genre").value
@@ -1240,7 +1296,12 @@
                 genre === "classical" ||
                 genre === "symphonic"
             ) {
-                section.style.display = "flex";
+                /*
+                 * CHANGED: The container must be block-level so each
+                 * .query-row can occupy its own complete line.
+                 * Using flex here placed all three rows side-by-side.
+                 */
+                section.style.display = "block";
             } else {
                 section.style.display = "none";
             }
@@ -1274,7 +1335,21 @@
             document.getElementById("query-artist-exact").checked = false;
             document.getElementById("query-title").value = "";
             document.getElementById("query-title-exact").checked = false;
+
+            /*
+             * CHANGED: Clear all conditional Classical/Symphonic search
+             * fields and their Exact controls. Genre is reset below, and
+             * the conditional section is explicitly hidden.
+             */
+            document.getElementById("query-composer").value = "";
+            document.getElementById("query-composer-exact").checked = false;
+            document.getElementById("query-orchestra").value = "";
+            document.getElementById("query-orchestra-exact").checked = false;
+            document.getElementById("query-conductor").value = "";
+            document.getElementById("query-conductor-exact").checked = false;
+
             document.getElementById("query-genre").value = "";
+            document.getElementById("query-classical-fields").style.display = "none";
             document.getElementById("query-format").value = "";
             document.getElementById("query-reissue").checked = false;
             document.getElementById("query-dbx").checked = false;
@@ -1298,6 +1373,19 @@
             const title =
                 document.getElementById("query-title").value.trim();
 
+            /*
+             * CHANGED: Classical/Symphonic fields are independent
+             * primary search criteria. Blank fields impose no filter.
+             */
+            const composer =
+                document.getElementById("query-composer").value.trim();
+
+            const orchestra =
+                document.getElementById("query-orchestra").value.trim();
+
+            const conductor =
+                document.getElementById("query-conductor").value.trim();
+
             const genre =
                 document.getElementById("query-genre").value.trim();
 
@@ -1314,18 +1402,33 @@
                SELECT clause
                -------------------------------------------------------- */
 
+            /*
+             * CHANGED: Build the SELECT list from the selected Genre.
+             *
+             * Classical/Symphonic records always return the three
+             * Classical search dimensions, plus Genre. Other genres
+             * return Genre as the minimum additional field.
+             *
+             * Extended Display Fields are appended below. Search
+             * criteria determine the WHERE clause; they do not
+             * otherwise alter the SELECT list.
+             */
             const columns = [
                 "id",
                 "artist",
-                "title",
-                "format"
+                "title"
             ];
 
-            /*
-            if (document.getElementById("display-genre").checked) {
-                columns.push("genre");
+            if (
+                genre.toLowerCase() === "classical" ||
+                genre.toLowerCase() === "symphonic"
+            ) {
+                columns.push("composer");
+                columns.push("conductor");
+                columns.push("orchestra");
             }
-            */
+
+            columns.push("genre");
 
             if (document.getElementById("display-year").checked) {
                 columns.push("year");
@@ -1355,6 +1458,19 @@
             const titleExact =
                 document.getElementById("query-title-exact").checked;
 
+            /*
+             * CHANGED: Each Classical/Symphonic search field gets its
+             * own Exact option, matching Artist and Title behavior.
+             */
+            const composerExact =
+                document.getElementById("query-composer-exact").checked;
+
+            const orchestraExact =
+                document.getElementById("query-orchestra-exact").checked;
+
+            const conductorExact =
+                document.getElementById("query-conductor-exact").checked;
+
             if (artist !== "") {
                 if (artistExact) {
                     predicates.push(
@@ -1375,6 +1491,47 @@
                 } else {
                     predicates.push(
                         "title LIKE " + sqlQuote("%" + title + "%")
+                    );
+                }
+            }
+
+            /*
+             * CHANGED: Composer, Orchestra, and Conductor use the same
+             * fuzzy/exact matching model as Artist and Title. Populated
+             * fields are ANDed with all other active search criteria.
+             */
+            if (composer !== "") {
+                if (composerExact) {
+                    predicates.push(
+                        "composer = " + sqlQuote(composer)
+                    );
+                } else {
+                    predicates.push(
+                        "composer LIKE " + sqlQuote("%" + composer + "%")
+                    );
+                }
+            }
+
+            if (orchestra !== "") {
+                if (orchestraExact) {
+                    predicates.push(
+                        "orchestra = " + sqlQuote(orchestra)
+                    );
+                } else {
+                    predicates.push(
+                        "orchestra LIKE " + sqlQuote("%" + orchestra + "%")
+                    );
+                }
+            }
+
+            if (conductor !== "") {
+                if (conductorExact) {
+                    predicates.push(
+                        "conductor = " + sqlQuote(conductor)
+                    );
+                } else {
+                    predicates.push(
+                        "conductor LIKE " + sqlQuote("%" + conductor + "%")
                     );
                 }
             }
@@ -1432,19 +1589,7 @@
 
             console.log("Musica Query:");
             console.log(sql);
-            
-            /*            
-            fetch("./py/server_query_api.py", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    sql: sql
-                })
-            })
-            */
-            
+                                
             fetch("./py/server_query_api.py", {
                 method: "POST",
                 headers: {
@@ -1510,6 +1655,9 @@
                 "id",
                 "artist",
                 "title",
+                "composer",
+                "conductor",
+                "orchestra",
                 "format",
                 "genre",
                 "year",
@@ -1798,7 +1946,10 @@
             const queryFields = [
                 "query-artist",
                 "query-title",
-                "query-genre"
+                "query-genre",
+                "query-composer",
+                "query-orchestra",
+                "query-conductor"
             ];
 
             queryFields.forEach(
@@ -1810,6 +1961,11 @@
             document.getElementById("query-format").value = "";
 
             const queryChecks = [
+                "query-artist-exact",
+                "query-title-exact",
+                "query-composer-exact",
+                "query-orchestra-exact",
+                "query-conductor-exact",
                 "query-reissue",
                 "query-dbx",
                 "display-year",
@@ -1823,13 +1979,13 @@
                 }
             );
 
+            document.getElementById("query-classical-fields").style.display = "none";
             document.getElementById("queryResultsBody").innerHTML = "";
             document.getElementById("queryResults").style.display = "none";
         }
 
         resetQueryOnLoad();
 
-        /* remove this code */        
         document.getElementById("add-genre").addEventListener(
             "input",
             updateAddGenreFields
