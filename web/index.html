@@ -849,7 +849,6 @@
 
                     <label for="query-format">Format:</label>
 
-                    /* defaults to LP */
                     <select id="query-format" name="query-format">
                         <option value="">Any</option>
                         <option value="LP">LP</option>
@@ -1271,6 +1270,7 @@
 
             closeAuthentication();
 
+            /* Add Record and Query are mutually exclusive. */
             document.getElementById("queryPanel").style.display = "none";
             document.getElementById("queryResults").style.display = "none";
             document.getElementById("editOptions").style.display = "none";
@@ -1289,6 +1289,8 @@
              */
 
             document.getElementById("addPanel").style.display = "none";
+            document.getElementById("queryPanel").style.display = "none";
+            document.getElementById("queryResults").style.display = "none";
             document.getElementById("editOptions").style.display = "block";
             document.getElementById("editMenu").style.display = "none";
         }
@@ -1361,6 +1363,9 @@
 
             document.getElementById("editOptions").style.display = "none";
             document.getElementById("editMenu").style.display = "block";
+
+            /* Query and Add Record are mutually exclusive. */
+            document.getElementById("addPanel").style.display = "none";
 
             accessState = "JAU";
 
