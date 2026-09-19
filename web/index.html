@@ -240,10 +240,16 @@
         }
 
         .query-title {
-            margin: 0 0 18px 0;
+            margin: 12px 0 18px 0;
             text-align: center;
             font-size: 1.35em;
             font-weight: bold;
+        }
+
+        .add-legend {
+            text-align: center;
+            margin: -8px 0 14px 0;
+            font-size: 0.9em;
         }
 
         .query-section {
@@ -637,9 +643,13 @@
         <div class="query-panel">
             <div class="query-title">Add Record</div>
 
+            <div class="add-legend">
+                * Required field
+            </div>
+
             <div class="query-section">
                 <div class="add-form">
-                    <label for="add-genre">Genre:</label>
+                    <label for="add-genre">Genre: *</label>
                     <select id="add-genre" name="add-genre" onchange="updateAddGenreFields()">
                         <option value="">Select</option>
                         <option value="Jazz">Jazz</option>
@@ -649,45 +659,45 @@
                         <option value="Symphonic">Symphonic</option>
                     </select>
 
-                    <label for="add-artist">Artist:</label>
+                    <label for="add-artist">Artist: *</label>
                     <input type="text" id="add-artist" name="add-artist" autocomplete="off">
 
-                    <label for="add-title">Title:</label>
+                    <label for="add-title">Title: *</label>
                     <input type="text" id="add-title" name="add-title" autocomplete="off">
 
-                    <label for="add-year">Year:</label>
+                    <label for="add-year">Year: *</label>
                     <input type="text" id="add-year" name="add-year" autocomplete="off">
                 </div>
 
                 <div id="addSymphonicSection" class="add-classical-fields" style="display: none;">
                     <div>
-                        <label for="add-composer">Composer:</label>
+                        <label for="add-composer">Composer: *</label>
                         <input type="text" id="add-composer" name="add-composer" autocomplete="off">
                     </div>
                     <div>
-                        <label for="add-conductor">Conductor:</label>
+                        <label for="add-conductor">Conductor: *</label>
                         <input type="text" id="add-conductor" name="add-conductor" autocomplete="off">
                     </div>
                     <div>
-                        <label for="add-orchestra">Orchestra:</label>
+                        <label for="add-orchestra">Orchestra: *</label>
                         <input type="text" id="add-orchestra" name="add-orchestra" autocomplete="off">
                     </div>
                 </div>
 
                 <div class="add-form">
-                    <label for="add-label">Label:</label>
+                    <label for="add-label">Label: *</label>
                     <input type="text" id="add-label" name="add-label" autocomplete="off">
 
-                    <label for="add-catalog">Catalog Number:</label>
+                    <label for="add-catalog">Catalog Number: *</label>
                     <input type="text" id="add-catalog" name="add-catalog" autocomplete="off">
                 </div>
 
                 <div class="add-bottom-grid">
                     <div class="add-bottom-item">
-                        <label for="add-format">Format:</label>
+                        <label for="add-format">Format: *</label>
                         <select id="add-format" name="add-format">
                             <option value="">Select</option>
-                            <option value="LP">LP</option>
+                            <option value="LP" selected>LP</option>
                             <option value="CD">CD</option>
                             <option value="Cass">Cassette</option>
                             <option value="RTR">RTR</option>
@@ -697,7 +707,7 @@
                         </select>
                     </div>
                     <div class="add-bottom-item">
-                        <label for="add-mode">Recording Mode:</label>
+                        <label for="add-mode">Recording Mode: *</label>
                         <select id="add-mode" name="add-mode">
                             <option value="">Select</option>
                             <option value="S">Stereo</option>
@@ -825,7 +835,7 @@
                 <div class="query-section-title">Secondary Search Parameters</div>
 
                 <div class="query-row-secondary">
-                    <label for="query-genre">Genre:</label>
+                    <label for="query-genre">Genre *:</label>
 
                     <select id="query-genre" name="query-genre"
                         onchange="updateQueryGenreFields()">
@@ -839,6 +849,7 @@
 
                     <label for="query-format">Format:</label>
 
+                    /* defaults to LP */
                     <select id="query-format" name="query-format">
                         <option value="">Any</option>
                         <option value="LP">LP</option>
@@ -1214,6 +1225,9 @@
                     document.getElementById(id).value = "";
                 }
             );
+
+            /* Recording Mode defaults to Both. */
+            document.getElementById("add-format").value = "LP";
 
             /* Recording Mode defaults to Both. */
             document.getElementById("add-mode").value = "B";
