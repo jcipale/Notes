@@ -51,16 +51,28 @@ def execute_query(sql):
     # Locate the configured Musica database.
     #
 
-    db_path = (
-        settings.get("MUSICA_DB")
-        or settings.get("DATABASE")
-        or settings.get("DB_PATH")
-    )
+    #db_path = (
+    #    settings.get("MUSICA_DB")
+    #    or settings.get("DATABASE")
+    #    or settings.get("DB_PATH")
+    #)
 
-    if not db_path:
+    db_path = os.path.join(
+        os.path.expanduser(
+            settings.get("DPATH", "")
+        ),
+        settings.get("DBASE", "")
+)
 
-        return None, "Musica database path is not configured."
+    #if not db_path:
+    #
+    #    return None, "Musica database path is not configured."
 
+    if not settings.get("DPATH"):
+        return None, "DPATH is not configured."
+
+    if not settings.get("DBASE"):
+        return None, "DBASE is not configured."
 
     #
     # Execute the SQL query.
@@ -884,63 +896,53 @@ def run_cgi():
 
     if content_length is None:
 
-        response = json.dumps(
-            {
-                "error": "Missing Content-Length"
-            }
-        )
+        #
+        # Apache did not supply CONTENT_LENGTH.
+        #
+        # Read the CGI request body until EOF.
+        #
 
-        print(
-            "Status: 400"
-        )
-        print(
-            "Content-Type: application/json"
-        )
-        print()
-        print(
-            response
-        )
+        body = sys.stdin.buffer.read()
 
-        return
+    else:
 
+        try:
 
-    try:
+            length = int(
+                content_length
+            )
 
-        length = int(
-            content_length
-        )
+        except ValueError:
 
-    except ValueError:
+            response = json.dumps(
+                {
+                    "error": "Invalid Content-Length"
+                }
+            )
 
-        response = json.dumps(
-            {
-                "error": "Invalid Content-Length"
-            }
-        )
+            print(
+                "Status: 400"
+            )
+            print(
+                "Content-Type: application/json"
+            )
+            print()
+            print(
+                response
+            )
 
-        print(
-            "Status: 400"
-        )
-        print(
-            "Content-Type: application/json"
-        )
-        print()
-        print(
-            response
-        )
-
-        return
-
-
-    #
-    # Read and decode the JSON request.
-    #
-
-    try:
+            return
 
         body = sys.stdin.buffer.read(
             length
         )
+
+
+    #
+    # Decode the JSON request.
+    #
+
+    try:
 
         request = json.loads(
             body.decode(

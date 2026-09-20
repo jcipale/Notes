@@ -309,6 +309,11 @@
             justify-self: start;
         }
 
+        #add-year {
+            width: 100px;
+            justify-self: start;
+        }
+
         .add-form > label {
             font-weight: bold;
             text-align: right;
@@ -659,14 +664,14 @@
                         <option value="Symphonic">Symphonic</option>
                     </select>
 
+                    <label for="add-year">Year: *</label>
+                    <input type="text" id="add-year" name="add-year" autocomplete="off">
+
                     <label for="add-artist">Artist: *</label>
                     <input type="text" id="add-artist" name="add-artist" autocomplete="off">
 
                     <label for="add-title">Title: *</label>
                     <input type="text" id="add-title" name="add-title" autocomplete="off">
-
-                    <label for="add-year">Year: *</label>
-                    <input type="text" id="add-year" name="add-year" autocomplete="off">
                 </div>
 
                 <div id="addSymphonicSection" class="add-classical-fields" style="display: none;">
@@ -729,7 +734,7 @@
             </div>
 
             <div class="query-actions">
-                <button type="button">Add</button>
+                <button type="button" onclick="executeAdd()">Add</button>
                 <button type="button" onclick="clearAddForm()">Clear</button>
                 <button type="button" onclick="closeAdd()">Cancel</button>
             </div>
@@ -1407,6 +1412,277 @@
             document.getElementById("queryResults").style.display = "none";
         }
 
+        function executeAdd() {
+
+            /*
+             * PASS 1: Add SQL construction only.
+             *
+             * Build the INSERT statement from the Add Record form
+             * and write it to the browser console. No database
+             * connection or execution yet.
+             */
+
+            const genre =
+                document.getElementById("add-genre").value.trim();
+
+            const artist =
+                document.getElementById("add-artist").value.trim();
+
+            const title =
+                document.getElementById("add-title").value.trim();
+
+            const yearText =
+                document.getElementById("add-year").value.trim();
+
+            const composer =
+                document.getElementById("add-composer").value.trim();
+
+            const conductor =
+                document.getElementById("add-conductor").value.trim();
+
+            const orchestra =
+                document.getElementById("add-orchestra").value.trim();
+
+            const label =
+                document.getElementById("add-label").value.trim();
+
+            const catalogNumber =
+                document.getElementById("add-catalog").value.trim();
+
+            const format =
+                document.getElementById("add-format").value;
+
+            const mode =
+                document.getElementById("add-mode").value;
+
+            const reissue =
+                document.getElementById("add-reissue").checked;
+
+            const dbx =
+                document.getElementById("add-dbx").checked;
+
+            /*
+             * Required-field validation belongs here at the UI
+             * boundary as well as in the backend.
+             */
+            if (
+                genre === "" ||
+                artist === "" ||
+                title === "" ||
+                yearText === "" ||
+                label === "" ||
+                catalogNumber === ""
+            ) {
+                alert("All required fields must be completed.");
+                return;
+            }
+
+            /*
+             * Year must be a four-digit value with a minimum of 1889.
+             */
+            if (!/^\d{4}$/.test(yearText) ||
+                parseInt(yearText, 10) < 1889) {
+                alert("Year must be four digits and at least 1889.");
+                return;
+            }
+
+            /*
+             * Format and Recording Mode always have a value because
+             * the UI supplies defaults. Validate them anyway before
+             * constructing SQL.
+             */
+            const validFormats = [
+                "LP",
+                "CD",
+                "Cass",
+                "RTR",
+                "78",
+                "4T",
+                "8T"
+            ];
+
+            const validModes = [
+                "M",
+                "S",
+                "B"
+            ];
+
+            if (!validFormats.includes(format)) {
+                alert("A valid Format is required.");
+                return;
+            }
+
+            if (!validModes.includes(mode)) {
+                alert("A valid Recording Mode is required.");
+                return;
+            }
+
+            /*
+             * Classical/Symphonic recordings require Composer,
+             * Conductor, and Orchestra. Other genres store these
+             * database fields as NULL.
+             */
+            const classicalGenre =
+                genre.toLowerCase() === "classical" ||
+                genre.toLowerCase() === "symphonic";
+
+            if (
+                classicalGenre &&
+                (
+                    composer === "" ||
+                    conductor === "" ||
+                    orchestra === ""
+                )
+            ) {
+                alert(
+                    "Composer, Conductor, and Orchestra are required " +
+                    "for Classical and Symphonic recordings."
+                );
+                return;
+            }
+
+            /*
+             * SQL string quoting. Single quotes inside user-entered
+             * text are doubled for SQL string literals.
+             */
+            function sqlQuote(value) {
+                return "'" + value.replace(/'/g, "''") + "'";
+            }
+
+            const sqlComposer =
+                classicalGenre
+                    ? sqlQuote(composer)
+                    : "NULL";
+
+            const sqlConductor =
+                classicalGenre
+                    ? sqlQuote(conductor)
+                    : "NULL";
+
+            const sqlOrchestra =
+                classicalGenre
+                    ? sqlQuote(orchestra)
+                    : "NULL";
+
+            const sqlReissue =
+                reissue
+                    ? "'Y'"
+                    : "NULL";
+
+            const sqlDbx =
+                dbx
+                    ? "'Y'"
+                    : "NULL";
+
+            const sql =
+                "INSERT INTO recordings (" +
+                "artist, title, year, " +
+                "composer, orchestra, conductor, " +
+                "genre, format, label, catalog_number, " +
+                "recording_mode, reissue, dbx_encoded" +
+                ") VALUES (" +
+                sqlQuote(artist) + ", " +
+                sqlQuote(title) + ", " +
+                yearText + ", " +
+                sqlComposer + ", " +
+                sqlOrchestra + ", " +
+                sqlConductor + ", " +
+                sqlQuote(genre) + ", " +
+                sqlQuote(format) + ", " +
+                sqlQuote(label) + ", " +
+                sqlQuote(catalogNumber) + ", " +
+                sqlQuote(mode) + ", " +
+                sqlReissue + ", " +
+                sqlDbx +
+                ");";
+
+            console.log("Musica Add:");
+            console.log(sql);
+
+            /*
+             * PASS 2: Send the structured record to the backend.
+             *
+             * The browser sends record data, not SQL. The backend is
+             * responsible for authoritative validation and SQLite INSERT.
+             */
+            const record = {
+                artist: artist,
+                title: title,
+                year: yearText,
+                composer: classicalGenre ? composer : null,
+                orchestra: classicalGenre ? orchestra : null,
+                conductor: classicalGenre ? conductor : null,
+                genre: genre,
+                format: format,
+                label: label,
+                catalog_number: catalogNumber,
+                recording_mode: mode,
+                reissue: reissue,
+                dbx_encoded: dbx
+            };
+
+            fetch("/py/server.py", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    operation: "add",
+                    record: record
+                })
+            })
+            .then(
+                response => {
+                    if (!response.ok) {
+                        return response.json().then(
+                            result => {
+                                throw new Error(
+                                    result.error ||
+                                    "Add failed: HTTP " +
+                                    response.status
+                                );
+                            }
+                        );
+                    }
+
+                    return response.json();
+                }
+            )
+            .then(
+                result => {
+                    if (result.error) {
+                        throw new Error(result.error);
+                    }
+
+                    console.log(
+                        "Musica Add successful. Record ID:",
+                        result.id
+                    );
+
+                    alert(
+                        "Record added successfully. Record ID: " +
+                        result.id
+                    );
+
+                    resetAddForm();
+                }
+            )
+            .catch(
+                error => {
+                    console.error(
+                        "Add error:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to add record: " +
+                        error.message
+                    );
+                }
+            );
+        }
+
+
         function executeQuery() {
             /*
              * PASS 1: Query construction only.
@@ -1450,20 +1726,23 @@
                -------------------------------------------------------- */
 
             /*
-             * CHANGED: Build the SELECT list from the selected Genre.
+             * RESTORED: Format and Recording Mode are part of the
+             * Query result set. They are search parameters, but they
+             * are also returned as result columns.
              *
-             * Classical/Symphonic records always return the three
-             * Classical search dimensions, plus Genre. Other genres
-             * return Genre as the minimum additional field.
+             * Classical/Symphonic records include the three
+             * Classical search dimensions, plus Genre.
+             * Other genres include Genre as the minimum additional
+             * field.
              *
-             * Extended Display Fields are appended below. Search
-             * criteria determine the WHERE clause; they do not
-             * otherwise alter the SELECT list.
+             * Extended Display Fields remain Year, Label, and
+             * Catalog ID.
              */
             const columns = [
                 "id",
                 "artist",
-                "title"
+                "title",
+                "format"
             ];
 
             if (
@@ -1480,6 +1759,8 @@
             if (document.getElementById("display-year").checked) {
                 columns.push("year");
             }
+
+            columns.push("recording_mode");
 
             if (document.getElementById("display-label").checked) {
                 columns.push("label");
@@ -1637,7 +1918,10 @@
             console.log("Musica Query:");
             console.log(sql);
                                 
+            /*            
             fetch("./py/server_query_api.py", {
+            */
+            fetch("./py/server.py", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
