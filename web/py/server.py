@@ -371,37 +371,28 @@ class MusicaNotesHandler(
     SimpleHTTPRequestHandler
 ):
 
-    #def do_GET(self):
-    #
-    #   #
-    #   # API request:
-    #   #
-    #
-    #   if self.path == "/api/settings":
-
-    #       self.send_settings()
-
-    #       return
-
-        #
-        # All other requests are normal web files.
-        #
-
-    #   super().do_GET()
-
     def do_GET(self):
 
         #
         # API request:
         #
 
-        if self.path == "/api/settings":
+        #if self.path == "/api/settings":
 
-            self.send_settings()
+        #    self.send_settings()
+
+        #    return
+
+        # CHANGED: Add Record request.
+        #
+        # The browser uses /py/server.py for Add().
+        # Route the request to the shared Add implementation.
+
+        if self.path.startswith("/py/server.py"):
+
+            self.send_add()
 
             return
-
-
         #
         # CGI compatibility request:
         #
@@ -435,13 +426,10 @@ class MusicaNotesHandler(
 
         # CHANGED: Add Record API request.
 
-        if self.path == "/api/add":
+        if self.path == "/py/server.py":
 
             self.send_add()
 
-            return
-
-    
             return
 
 

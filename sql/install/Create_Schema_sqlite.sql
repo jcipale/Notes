@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS recordings (
     conductor TEXT,
 
     genre  TEXT NOT NULL
-        CHECK (genre IN ('Jazz','Rock','Country','Symphonic')),
+        CHECK (genre IN ('Jazz','Rock','Country','Classical','Symphonic','Soundtrack')),
 
     format TEXT NOT NULL
         CHECK (format IN ('LP','CD','Cass','RtR','78','4T','8T')),

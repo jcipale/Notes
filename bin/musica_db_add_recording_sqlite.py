@@ -14,7 +14,7 @@ from pathlib import Path
 
 DB_FILE = Path.home() / "Musica" / "musica.db"
 
-GENRES = ["Jazz", "Rock", "Country", "Symphonic", "Soundtrack"]
+GENRES = ["Jazz", "Rock", "Country", "Classical", "Symphonic", "Soundtrack"]
 FORMATS = ["LP", "CD", "Cass", "RtR", "78", "4T", "8T"]
 REC_MODES = ["M", "S", "B"]
 YN = ["Y", "N"]
