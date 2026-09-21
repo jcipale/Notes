@@ -309,11 +309,6 @@
             justify-self: start;
         }
 
-        #add-year {
-            width: 100px;
-            justify-self: start;
-        }
-
         .add-form > label {
             font-weight: bold;
             text-align: right;
@@ -629,11 +624,11 @@
             Add Record
         </button>
 
-        <button class="menu-button">
-            Modify Record
+        <button class="menu-button" onclick="openModify()">
+            Edit Record
         </button>
 
-        <button class="menu-button">
+        <button class="menu-button" onclick="openDelete()">
             Delete Record
         </button>
 
@@ -662,17 +657,16 @@
                         <option value="Country">Country</option>
                         <option value="Classical">Classical</option>
                         <option value="Symphonic">Symphonic</option>
-                        <option value="Soundtrack">Soundtrack</option>
                     </select>
-
-                    <label for="add-year">Year: *</label>
-                    <input type="text" id="add-year" name="add-year" autocomplete="off">
 
                     <label for="add-artist">Artist: *</label>
                     <input type="text" id="add-artist" name="add-artist" autocomplete="off">
 
                     <label for="add-title">Title: *</label>
                     <input type="text" id="add-title" name="add-title" autocomplete="off">
+
+                    <label for="add-year">Year: *</label>
+                    <input type="text" id="add-year" name="add-year" autocomplete="off">
                 </div>
 
                 <div id="addSymphonicSection" class="add-classical-fields" style="display: none;">
@@ -735,13 +729,157 @@
             </div>
 
             <div class="query-actions">
-                <button type="button" onclick="executeAdd()">Add</button>
+                <button type="button">Add</button>
                 <button type="button" onclick="clearAddForm()">Clear</button>
                 <button type="button" onclick="closeAdd()">Cancel</button>
             </div>
         </div>
     </div>
 
+
+    <!-- ============================================================
+                         MODIFY SEARCH DIALOG — HTML
+         ============================================================ -->
+
+    <div
+        id="modifyPanel"
+        style="display: none;">
+
+        <div class="query-panel">
+
+            <div class="query-title">Edit Record</div>
+
+            <div class="query-section">
+
+                <div class="query-section-title">
+                    Primary Search Keys
+                </div>
+
+                <div class="query-row">
+                    <label for="modify-artist">
+                        Artist:
+                    </label>
+
+                    <input
+                        type="text"
+                        id="modify-artist"
+                        name="modify-artist"
+                        autocomplete="off">
+                </div>
+
+                <div class="query-row">
+                    <label for="modify-title">
+                        Title:
+                    </label>
+
+                    <input
+                        type="text"
+                        id="modify-title"
+                        name="modify-title"
+                        autocomplete="off">
+                </div>
+
+            </div>
+
+            <div class="query-actions">
+
+                <button
+                    type="button"
+                    onclick="executeModifySearch()">
+                    Search
+                </button>
+
+                <button
+                    type="button"
+                    onclick="clearModifySearch()">
+                    Clear
+                </button>
+
+                <button
+                    type="button"
+                    onclick="closeModifySearch()">
+                    Close
+                </button>
+
+            </div>
+
+            <div
+                id="modifyResults"
+                class="query-results"
+                style="display: none;">
+
+                <div class="query-results-title">
+                    Results
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rec ID</th>
+                            <th>Artist</th>
+                            <th>Title</th>
+                            <th>Year</th>
+                            <th>Composer</th>
+                            <th>Orchestra</th>
+                            <th>Conductor</th>
+                            <th>Genre</th>
+                            <th>Format</th>
+                            <th>Label</th>
+                            <th>Catalog ID</th>
+                            <th>Mode</th>
+                            <th>Reissue</th>
+                            <th>DBX</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="modifyResultsBody"></tbody>
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+                         DELETE RECORD DIALOG — HTML
+         ============================================================ -->
+
+    <div
+        id="deletePanel"
+        style="display: none;">
+
+        <div class="query-panel">
+
+            <div class="query-title">Delete Record</div>
+
+            <div class="query-section">
+
+                <div class="query-section-title">
+                    Delete Record
+                </div>
+
+                <p style="text-align: center;">
+                    Delete functionality will be implemented after the
+                    Edit navigation and search path are complete.
+                </p>
+
+            </div>
+
+            <div class="query-actions">
+
+                <button
+                    type="button"
+                    onclick="closeDelete()">
+                    Close
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
 
     <!-- ============================================================
                            QUERY DIALOG — HTML
@@ -851,7 +989,6 @@
                         <option value="Country">Country</option>
                         <option value="Classical">Classical</option>
                         <option value="Symphonic">Symphonic</option>
-                        <option value="Soundtrack">Soundtrack</option>
                     </select>
 
                     <label for="query-format">Format:</label>
@@ -1267,22 +1404,31 @@
         function openAdd() {
 
             /*
-             * CHANGED: Enter Add Record mode.
-             * Query and authentication interfaces are hidden.
-             * Database insertion is intentionally not implemented
-             * in this first-pass form.
+             * Enter the Add() operational path.
+             *
+             * Authentication has already occurred when the user
+             * entered Modify/Edit Control. Switching to Add() does
+             * not authenticate again.
              */
+
+            if (accessState !== "PU") {
+                alert("Edit access is required.");
+                return;
+            }
 
             resetAddForm();
 
-            closeAuthentication();
-
-            /* Add Record and Query are mutually exclusive. */
+            /*
+             * CHANGED: The Add/Edit/Delete control row remains visible
+             * throughout Modify mode. The selected operation is shown
+             * below it, keeping every operation one click away.
+             */
+            document.getElementById("editOptions").style.display = "block";
+            document.getElementById("addPanel").style.display = "block";
+            document.getElementById("modifyPanel").style.display = "none";
+            document.getElementById("deletePanel").style.display = "none";
             document.getElementById("queryPanel").style.display = "none";
             document.getElementById("queryResults").style.display = "none";
-            document.getElementById("editOptions").style.display = "none";
-            document.getElementById("editMenu").style.display = "block";
-            document.getElementById("addPanel").style.display = "block";
 
             document.getElementById("add-artist").focus();
         }
@@ -1291,15 +1437,11 @@
         function closeAdd() {
 
             /*
-             * CHANGED: Leave Add Record mode and return to the
-             * normal Modify Record menu state.
+             * Return from Add() to the Edit Control choices.
+             * The authenticated PU state remains active.
              */
 
             document.getElementById("addPanel").style.display = "none";
-            document.getElementById("queryPanel").style.display = "none";
-            document.getElementById("queryResults").style.display = "none";
-            document.getElementById("editOptions").style.display = "block";
-            document.getElementById("editMenu").style.display = "none";
         }
 
 
@@ -1362,19 +1504,12 @@
         function openQuery() {
 
             /*
-             * CHANGED: Returning to Query must close any
-             * outstanding Modify Record authentication dialog.
+             * Query is outside the Modify/Edit Control environment.
+             * Leaving Modify immediately ends PU access.
              */
 
+            leavePU();
             closeAuthentication();
-
-            document.getElementById("editOptions").style.display = "none";
-            document.getElementById("editMenu").style.display = "block";
-
-            /* Query and Add Record are mutually exclusive. */
-            document.getElementById("addPanel").style.display = "none";
-
-            accessState = "JAU";
 
             document.getElementById("queryPanel").style.display = "block";
             document.getElementById("query-artist").focus();
@@ -1413,277 +1548,6 @@
             document.getElementById("queryResultsBody").innerHTML = "";
             document.getElementById("queryResults").style.display = "none";
         }
-
-        function executeAdd() {
-
-            /*
-             * PASS 1: Add SQL construction only.
-             *
-             * Build the INSERT statement from the Add Record form
-             * and write it to the browser console. No database
-             * connection or execution yet.
-             */
-
-            const genre =
-                document.getElementById("add-genre").value.trim();
-
-            const artist =
-                document.getElementById("add-artist").value.trim();
-
-            const title =
-                document.getElementById("add-title").value.trim();
-
-            const yearText =
-                document.getElementById("add-year").value.trim();
-
-            const composer =
-                document.getElementById("add-composer").value.trim();
-
-            const conductor =
-                document.getElementById("add-conductor").value.trim();
-
-            const orchestra =
-                document.getElementById("add-orchestra").value.trim();
-
-            const label =
-                document.getElementById("add-label").value.trim();
-
-            const catalogNumber =
-                document.getElementById("add-catalog").value.trim();
-
-            const format =
-                document.getElementById("add-format").value;
-
-            const mode =
-                document.getElementById("add-mode").value;
-
-            const reissue =
-                document.getElementById("add-reissue").checked;
-
-            const dbx =
-                document.getElementById("add-dbx").checked;
-
-            /*
-             * Required-field validation belongs here at the UI
-             * boundary as well as in the backend.
-             */
-            if (
-                genre === "" ||
-                artist === "" ||
-                title === "" ||
-                yearText === "" ||
-                label === "" ||
-                catalogNumber === ""
-            ) {
-                alert("All required fields must be completed.");
-                return;
-            }
-
-            /*
-             * Year must be a four-digit value with a minimum of 1889.
-             */
-            if (!/^\d{4}$/.test(yearText) ||
-                parseInt(yearText, 10) < 1889) {
-                alert("Year must be four digits and at least 1889.");
-                return;
-            }
-
-            /*
-             * Format and Recording Mode always have a value because
-             * the UI supplies defaults. Validate them anyway before
-             * constructing SQL.
-             */
-            const validFormats = [
-                "LP",
-                "CD",
-                "Cass",
-                "RTR",
-                "78",
-                "4T",
-                "8T"
-            ];
-
-            const validModes = [
-                "M",
-                "S",
-                "B"
-            ];
-
-            if (!validFormats.includes(format)) {
-                alert("A valid Format is required.");
-                return;
-            }
-
-            if (!validModes.includes(mode)) {
-                alert("A valid Recording Mode is required.");
-                return;
-            }
-
-            /*
-             * Classical/Symphonic recordings require Composer,
-             * Conductor, and Orchestra. Other genres store these
-             * database fields as NULL.
-             */
-            const classicalGenre =
-                genre.toLowerCase() === "classical" ||
-                genre.toLowerCase() === "symphonic";
-
-            if (
-                classicalGenre &&
-                (
-                    composer === "" ||
-                    conductor === "" ||
-                    orchestra === ""
-                )
-            ) {
-                alert(
-                    "Composer, Conductor, and Orchestra are required " +
-                    "for Classical and Symphonic recordings."
-                );
-                return;
-            }
-
-            /*
-             * SQL string quoting. Single quotes inside user-entered
-             * text are doubled for SQL string literals.
-             */
-            function sqlQuote(value) {
-                return "'" + value.replace(/'/g, "''") + "'";
-            }
-
-            const sqlComposer =
-                classicalGenre
-                    ? sqlQuote(composer)
-                    : "NULL";
-
-            const sqlConductor =
-                classicalGenre
-                    ? sqlQuote(conductor)
-                    : "NULL";
-
-            const sqlOrchestra =
-                classicalGenre
-                    ? sqlQuote(orchestra)
-                    : "NULL";
-
-            const sqlReissue =
-                reissue
-                    ? "'Y'"
-                    : "NULL";
-
-            const sqlDbx =
-                dbx
-                    ? "'Y'"
-                    : "NULL";
-
-            const sql =
-                "INSERT INTO recordings (" +
-                "artist, title, year, " +
-                "composer, orchestra, conductor, " +
-                "genre, format, label, catalog_number, " +
-                "recording_mode, reissue, dbx_encoded" +
-                ") VALUES (" +
-                sqlQuote(artist) + ", " +
-                sqlQuote(title) + ", " +
-                yearText + ", " +
-                sqlComposer + ", " +
-                sqlOrchestra + ", " +
-                sqlConductor + ", " +
-                sqlQuote(genre) + ", " +
-                sqlQuote(format) + ", " +
-                sqlQuote(label) + ", " +
-                sqlQuote(catalogNumber) + ", " +
-                sqlQuote(mode) + ", " +
-                sqlReissue + ", " +
-                sqlDbx +
-                ");";
-
-            console.log("Musica Add:");
-            console.log(sql);
-
-            /*
-             * PASS 2: Send the structured record to the backend.
-             *
-             * The browser sends record data, not SQL. The backend is
-             * responsible for authoritative validation and SQLite INSERT.
-             */
-            const record = {
-                artist: artist,
-                title: title,
-                year: yearText,
-                composer: classicalGenre ? composer : null,
-                orchestra: classicalGenre ? orchestra : null,
-                conductor: classicalGenre ? conductor : null,
-                genre: genre,
-                format: format,
-                label: label,
-                catalog_number: catalogNumber,
-                recording_mode: mode,
-                reissue: reissue,
-                dbx_encoded: dbx
-            };
-
-            fetch("/py/server.py", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    operation: "add",
-                    record: record
-                })
-            })
-            .then(
-                response => {
-                    if (!response.ok) {
-                        return response.json().then(
-                            result => {
-                                throw new Error(
-                                    result.error ||
-                                    "Add failed: HTTP " +
-                                    response.status
-                                );
-                            }
-                        );
-                    }
-
-                    return response.json();
-                }
-            )
-            .then(
-                result => {
-                    if (result.error) {
-                        throw new Error(result.error);
-                    }
-
-                    console.log(
-                        "Musica Add successful. Record ID:",
-                        result.id
-                    );
-
-                    alert(
-                        "Record added successfully. Record ID: " +
-                        result.id
-                    );
-
-                    resetAddForm();
-                }
-            )
-            .catch(
-                error => {
-                    console.error(
-                        "Add error:",
-                        error
-                    );
-
-                    alert(
-                        "Unable to add record: " +
-                        error.message
-                    );
-                }
-            );
-        }
-
 
         function executeQuery() {
             /*
@@ -1728,23 +1592,20 @@
                -------------------------------------------------------- */
 
             /*
-             * RESTORED: Format and Recording Mode are part of the
-             * Query result set. They are search parameters, but they
-             * are also returned as result columns.
+             * CHANGED: Build the SELECT list from the selected Genre.
              *
-             * Classical/Symphonic records include the three
-             * Classical search dimensions, plus Genre.
-             * Other genres include Genre as the minimum additional
-             * field.
+             * Classical/Symphonic records always return the three
+             * Classical search dimensions, plus Genre. Other genres
+             * return Genre as the minimum additional field.
              *
-             * Extended Display Fields remain Year, Label, and
-             * Catalog ID.
+             * Extended Display Fields are appended below. Search
+             * criteria determine the WHERE clause; they do not
+             * otherwise alter the SELECT list.
              */
             const columns = [
                 "id",
                 "artist",
-                "title",
-                "format"
+                "title"
             ];
 
             if (
@@ -1761,8 +1622,6 @@
             if (document.getElementById("display-year").checked) {
                 columns.push("year");
             }
-
-            columns.push("recording_mode");
 
             if (document.getElementById("display-label").checked) {
                 columns.push("label");
@@ -1920,9 +1779,6 @@
             console.log("Musica Query:");
             console.log(sql);
                                 
-            /*            
-            fetch("./py/server_query_api.py", {
-            */
             fetch("./py/server.py", {
                 method: "POST",
                 headers: {
@@ -2058,6 +1914,243 @@
         
 
         /* ============================================================
+                   MODIFY SEARCH — JAVASCRIPT
+           ============================================================ */
+
+        function executeModifySearch() {
+
+            const artist =
+                document.getElementById("modify-artist").value.trim();
+
+            const title =
+                document.getElementById("modify-title").value.trim();
+
+            /*
+             * Artist and Title are independent search criteria.
+             * At least one must be supplied.
+             */
+
+            if (artist === "" && title === "") {
+
+                alert(
+                    "Enter an Artist or Title to search."
+                );
+
+                document.getElementById("modify-artist").focus();
+
+                return;
+            }
+
+            function sqlQuote(value) {
+                return "'" + value.replace(/'/g, "''") + "'";
+            }
+
+            const predicates = [];
+
+            if (artist !== "") {
+
+                predicates.push(
+                    "artist LIKE " +
+                    sqlQuote("%" + artist + "%")
+                );
+            }
+
+            if (title !== "") {
+
+                predicates.push(
+                    "title LIKE " +
+                    sqlQuote("%" + title + "%")
+                );
+            }
+
+            /*
+             * Modify search always retrieves the complete record.
+             * NULL values are returned by SQLite and displayed as
+             * empty cells.
+             */
+
+            const sql =
+                "SELECT id, artist, title, year, " +
+                "composer, orchestra, conductor, genre, format, " +
+                "label, catalog_number, recording_mode, " +
+                "reissue, dbx_encoded " +
+                "FROM recordings " +
+                "WHERE " + predicates.join(" AND ") +
+                " ORDER BY artist ASC, year ASC;";
+
+            console.log("Musica Modify Search:");
+            console.log(sql);
+
+            fetch("./py/server_query_api.py", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    sql: sql
+                })
+            })
+            .then(
+                response => {
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            "Modify search failed: HTTP " +
+                            response.status
+                        );
+                    }
+
+                    return response.json();
+                }
+            )
+            .then(
+                result => {
+
+                    if (result.error) {
+
+                        throw new Error(
+                            result.error
+                        );
+                    }
+
+                    console.log(
+                        "MODIFY RESULT COLUMNS:",
+                        result.columns
+                    );
+
+                    console.log(
+                        "MODIFY RESULT ROW:",
+                        result.rows[0]
+                    );
+
+                    displayModifyResults(result);
+                }
+            )
+            .catch(
+                error => {
+
+                    console.error(
+                        "Modify search error:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to execute Modify search."
+                    );
+                }
+            );
+        }
+
+
+        function displayModifyResults(result) {
+
+            const tbody =
+                document.getElementById(
+                    "modifyResultsBody"
+                );
+
+            const columnNames = [
+                "id",
+                "artist",
+                "title",
+                "year",
+                "composer",
+                "orchestra",
+                "conductor",
+                "genre",
+                "format",
+                "label",
+                "catalog_number",
+                "recording_mode",
+                "reissue",
+                "dbx_encoded"
+            ];
+
+            tbody.innerHTML = "";
+
+            result.rows.forEach(
+                row => {
+
+                    const tr =
+                        document.createElement("tr");
+
+                    columnNames.forEach(
+                        columnName => {
+
+                            const resultIndex =
+                                result.columns.indexOf(
+                                    columnName
+                                );
+
+                            const td =
+                                document.createElement("td");
+
+                            td.textContent =
+                                row[resultIndex] === null
+                                    ? ""
+                                    : row[resultIndex];
+
+                            tr.appendChild(td);
+                        }
+                    );
+
+                    tbody.appendChild(tr);
+                }
+            );
+
+            document.getElementById(
+                "modifyResults"
+            ).style.display = "block";
+        }
+
+
+        function clearModifySearch() {
+
+            document.getElementById(
+                "modify-artist"
+            ).value = "";
+
+            document.getElementById(
+                "modify-title"
+            ).value = "";
+
+            document.getElementById(
+                "modifyResultsBody"
+            ).innerHTML = "";
+
+            document.getElementById(
+                "modifyResults"
+            ).style.display = "none";
+
+            document.getElementById(
+                "modify-artist"
+            ).focus();
+        }
+
+
+        function closeModifySearch() {
+
+            /*
+             * Close the Edit() operational path and return to the
+             * Add/Edit/Delete choices. PU remains active.
+             */
+
+            document.getElementById(
+                "modifyPanel"
+            ).style.display = "none";
+
+            document.getElementById(
+                "modifyResultsBody"
+            ).innerHTML = "";
+
+            document.getElementById(
+                "modifyResults"
+            ).style.display = "none";
+        }
+
+
+        /* ============================================================
                    AUTHENTICATION DIALOG — JAVASCRIPT
            ============================================================ */
         let usageType = "";
@@ -2069,14 +2162,18 @@
         function modifyRecord() {
 
             /*
-             * CHANGED: Query and Modify Record are mutually
-             * exclusive application modes. Hide the Query
-             * interface before entering Modify Record mode.
+             * Modify Record is the top-level entry into the
+             * authenticated Edit Control environment.
+             *
+             * Do not display Add(), Edit(), or Delete() until access
+             * has been established.
              */
 
             document.getElementById("queryPanel").style.display = "none";
-            document.getElementById("queryResultsBody").innerHTML = "";
             document.getElementById("queryResults").style.display = "none";
+            document.getElementById("addPanel").style.display = "none";
+            document.getElementById("modifyPanel").style.display = "none";
+            document.getElementById("deletePanel").style.display = "none";
 
             if (usageType === "Personal") {
                 enterPU();
@@ -2090,22 +2187,107 @@
 
             alert("Unable to determine Usage Type.");
         }
-  
+
+
         function enterPU() {
+
+            /*
+             * Authentication establishes PU for the entire Modify
+             * session. Add(), Edit(), and Delete() do not authenticate
+             * again.
+             *
+             * The Add/Edit/Delete control row remains visible for the
+             * entire session. Selecting an operation changes only the
+             * operational panel below it.
+             */
 
             accessState = "PU";
 
             document.getElementById("editMenu").style.display = "none";
             document.getElementById("editOptions").style.display = "block";
+
+            document.getElementById("addPanel").style.display = "none";
+            document.getElementById("modifyPanel").style.display = "none";
+            document.getElementById("deletePanel").style.display = "none";
         }
 
 
         function leavePU() {
 
+            /*
+             * Leaving Modify immediately ends the authenticated
+             * session. No PU state persists after this point.
+             */
+
             accessState = "JAU";
 
             document.getElementById("editOptions").style.display = "none";
             document.getElementById("editMenu").style.display = "block";
+
+            document.getElementById("addPanel").style.display = "none";
+            document.getElementById("modifyPanel").style.display = "none";
+            document.getElementById("deletePanel").style.display = "none";
+
+            document.getElementById("modifyResultsBody").innerHTML = "";
+            document.getElementById("modifyResults").style.display = "none";
+        }
+
+
+        function openModify() {
+
+            /*
+             * Enter the Edit() operational path. Authentication has
+             * already occurred at the Modify entry point.
+             */
+
+            if (accessState !== "PU") {
+                alert("Edit access is required.");
+                return;
+            }
+
+            /*
+             * CHANGED: Keep the Add/Edit/Delete control row visible
+             * while the Edit() operational panel is displayed.
+             */
+            document.getElementById("editOptions").style.display = "block";
+            document.getElementById("addPanel").style.display = "none";
+            document.getElementById("modifyPanel").style.display = "block";
+            document.getElementById("deletePanel").style.display = "none";
+            document.getElementById("queryPanel").style.display = "none";
+            document.getElementById("queryResults").style.display = "none";
+
+            document.getElementById("modify-artist").focus();
+        }
+
+
+        function openDelete() {
+
+            /*
+             * Enter the Delete() operational path. No additional
+             * authentication is performed while PU remains active.
+             */
+
+            if (accessState !== "PU") {
+                alert("Edit access is required.");
+                return;
+            }
+
+            /*
+             * CHANGED: Keep the Add/Edit/Delete control row visible
+             * while the Delete() operational panel is displayed.
+             */
+            document.getElementById("editOptions").style.display = "block";
+            document.getElementById("addPanel").style.display = "none";
+            document.getElementById("modifyPanel").style.display = "none";
+            document.getElementById("deletePanel").style.display = "block";
+            document.getElementById("queryPanel").style.display = "none";
+            document.getElementById("queryResults").style.display = "none";
+        }
+
+
+        function closeDelete() {
+
+            document.getElementById("deletePanel").style.display = "none";
         }
               
         
@@ -2316,6 +2498,17 @@
             document.getElementById("queryResultsBody").innerHTML = "";
             document.getElementById("queryResults").style.display = "none";
         }
+
+        /*
+         * Start in JAU. The top-level Modify Record entry is the only
+         * edit-control entry point visible until authentication succeeds.
+         */
+        accessState = "JAU";
+        document.getElementById("editMenu").style.display = "block";
+        document.getElementById("editOptions").style.display = "none";
+        document.getElementById("addPanel").style.display = "none";
+        document.getElementById("modifyPanel").style.display = "none";
+        document.getElementById("deletePanel").style.display = "none";
 
         resetQueryOnLoad();
 
