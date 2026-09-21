@@ -412,32 +412,217 @@ class MusicaNotesHandler(
 
     def do_POST(self):
 
+    #
+    # /py/server.py handles both Add and Query requests.
+    #
+    # Read the JSON request once, then dispatch based on
+    # the contents of the request.
+    #
+
+        if self.path == "/py/server.py":
+
+            content_length = self.headers.get(
+                "Content-Length"
+        )
+
+        if content_length is None:
+
+            self.send_json_error(
+                400,
+                "Missing Content-Length"
+            )
+
+            return
+
+        try:
+
+            length = int(
+                content_length
+            )
+
+        except ValueError:
+
+            self.send_json_error(
+                400,
+                "Invalid Content-Length"
+            )
+
+            return
+
+        try:
+
+            body = self.rfile.read(
+                length
+            )
+
+            request = json.loads(
+                body.decode(
+                    "utf-8"
+                )
+            )
+
+        except (
+            UnicodeDecodeError,
+            json.JSONDecodeError
+        ):
+
+            self.send_json_error(
+                400,
+                "Invalid JSON"
+            )
+
+            return
+
+
         #
-        # SQL query API request:
+        # Add Record request.
+        #
+
+        if request.get(
+            "operation"
+        ) == "add":
+
+            result, error = execute_add(
+                request.get(
+                    "record"
+                )
+            )
+
+            if error is not None:
+
+                self.send_json_error(
+                    400,
+                    error
+                )
+
+                return
+
+            response = json.dumps(
+                result
+            )
+
+            self.send_response(
+                200
+            )
+
+            self.send_header(
+                "Content-Type",
+                "application/json"
+            )
+
+            self.send_header(
+                "Content-Length",
+                str(
+                    len(
+                        response.encode(
+                            "utf-8"
+                        )
+                    )
+                )
+            )
+
+            self.end_headers()
+
+            self.wfile.write(
+                response.encode(
+                    "utf-8"
+                )
+            )
+
+            return
+
+
+        #
+        # Query request.
+        #
+
+        sql = request.get(
+            "sql"
+        )
+
+        if isinstance(
+            sql,
+            str
+        ) and sql.strip():
+
+            result, error = execute_query(
+                sql
+            )
+
+            if error is not None:
+
+                self.send_json_error(
+                    400,
+                    error
+                )
+
+                return
+
+            response = json.dumps(
+                result
+            )
+
+            self.send_response(
+                200
+            )
+
+            self.send_header(
+                "Content-Type",
+                "application/json"
+            )
+
+            self.send_header(
+                "Content-Length",
+                str(
+                    len(
+                        response.encode(
+                            "utf-8"
+                        )
+                    )
+                )
+            )
+
+            self.end_headers()
+
+            self.wfile.write(
+                response.encode(
+                    "utf-8"
+                )
+            )
+
+            return
+
+
+        #
+        # The request was neither Add nor Query.
+        #
+
+        self.send_json_error(
+            400,
+            "Invalid request."
+        )
+
+        return
+
+
+        #
+        # Existing SQL query API request.
         #
 
         if self.path == "/api/query":
 
             self.send_query()
 
-
-            return
-
-
-        # CHANGED: Add Record API request.
-
-        if self.path == "/py/server.py":
-
-            self.send_add()
-
             return
 
 
         #
-        # CGI compatibility request:
+        # CGI compatibility request.
         #
 
-        if self.path.startswith("/py/server_query_api.py"):
+        if self.path.startswith(
+            "/py/server_query_api.py"
+        ):
 
             self.send_query()
 
@@ -452,7 +637,6 @@ class MusicaNotesHandler(
             404,
             "Not Found"
         )
-
     # CHANGED: Handle a structured Add Record request.
     #
     # The browser supplies record data, not SQL. This keeps the
