@@ -662,6 +662,120 @@ def execute_edit(record):
         return None, str(error)
 
 
+def execute_delete(record_id):
+
+    # Delete exactly one existing record identified by its database id.
+    # The id is the only value accepted by this operation.
+
+    config_file = get_config_path()
+
+    settings = read_settings(
+        config_file
+    )
+
+    if "ERROR" in settings:
+
+        return None, settings["ERROR"]
+
+    if not settings.get("DPATH"):
+
+        return None, "DPATH is not configured."
+
+    if not settings.get("DBASE"):
+
+        return None, "DBASE is not configured."
+
+    try:
+
+        record_id = int(record_id)
+
+    except (
+        TypeError,
+        ValueError
+    ):
+
+        return None, "Invalid Record ID."
+
+    if record_id <= 0:
+
+        return None, "Invalid Record ID."
+
+    db_path = os.path.join(
+        os.path.expanduser(
+            settings.get(
+                "DPATH",
+                ""
+            )
+        ),
+        settings.get(
+            "DBASE",
+            ""
+        )
+    )
+
+    connection = None
+
+    try:
+
+        connection = sqlite3.connect(
+            os.path.expanduser(
+                db_path
+            )
+        )
+
+        connection.execute(
+            "PRAGMA foreign_keys=ON;"
+        )
+
+        connection.execute(
+            "PRAGMA busy_timeout=5000;"
+        )
+
+        cursor = connection.cursor()
+
+        cursor.execute(
+            "DELETE FROM recordings WHERE id = ?",
+            (
+                record_id,
+            )
+        )
+
+        if cursor.rowcount != 1:
+
+            connection.rollback()
+            connection.close()
+
+            return None, (
+                "Record ID " +
+                str(record_id) +
+                " was not found."
+            )
+
+        connection.commit()
+
+        connection.close()
+
+        return {
+            "id": record_id
+        }, None
+
+    except sqlite3.IntegrityError as error:
+
+        if connection is not None:
+
+            connection.close()
+
+        return None, str(error)
+
+    except sqlite3.OperationalError as error:
+
+        if connection is not None:
+
+            connection.close()
+
+        return None, str(error)
+
+
 class MusicaNotesHandler(
     SimpleHTTPRequestHandler
 ):
@@ -835,6 +949,63 @@ class MusicaNotesHandler(
                 result, error = execute_edit(
                     request.get(
                         "record"
+                    )
+                )
+
+                if error is not None:
+
+                    self.send_json_error(
+                        400,
+                        error
+                    )
+
+                    return
+
+                response = json.dumps(
+                    result
+                )
+
+                self.send_response(
+                    200
+                )
+
+                self.send_header(
+                    "Content-Type",
+                    "application/json"
+                )
+
+                self.send_header(
+                    "Content-Length",
+                    str(
+                        len(
+                            response.encode(
+                                "utf-8"
+                            )
+                        )
+                    )
+                )
+
+                self.end_headers()
+
+                self.wfile.write(
+                    response.encode(
+                        "utf-8"
+                    )
+                )
+
+                return
+
+            #
+            # Delete Record request.
+            #
+
+            if request.get(
+                "operation"
+            ) == "delete":
+
+                result, error = execute_delete(
+                    request.get(
+                        "id"
                     )
                 )
 
@@ -1550,6 +1721,65 @@ def run_cgi():
         result, error = execute_edit(
             request.get(
                 "record"
+            )
+        )
+
+        if error is not None:
+
+            response = json.dumps(
+                {
+                    "error": error
+                }
+            )
+
+            print(
+                "Status: 400"
+            )
+            print(
+                "Content-Type: application/json"
+            )
+            print()
+            print(
+                response
+            )
+
+            return
+
+        response = json.dumps(
+            result
+        )
+
+        print(
+            "Content-Type: application/json"
+        )
+        print(
+            "Content-Length: {}".format(
+                len(
+                    response.encode(
+                        "utf-8"
+                    )
+                )
+            )
+        )
+        print()
+        print(
+            response
+        )
+
+        return
+
+
+    #
+    # CGI Delete Record request.
+    #
+
+    if request.get(
+        "operation"
+    ) == "delete":
+
+        result, error = execute_delete(
+            request.get(
+                "id"
             )
         )
 

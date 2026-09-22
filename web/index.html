@@ -543,7 +543,10 @@
 
         .query-results {
             margin-top: 18px;
-            overflow-x: auto;
+            padding-right: 12px;
+            padding-bottom: 12px;
+            overflow: auto;
+            box-sizing: border-box;
         }
 
         .query-results-title {
@@ -1052,13 +1055,48 @@
             <div class="query-section">
 
                 <div class="query-section-title">
-                    Delete Record
+                    Primary Search Keys
                 </div>
 
-                <p style="text-align: center;">
-                    Delete functionality will be implemented after the
-                    Edit navigation and search path are complete.
-                </p>
+                <div class="query-row">
+                    <label for="delete-artist">
+                        Artist:
+                    </label>
+
+                    <input
+                        type="text"
+                        id="delete-artist"
+                        name="delete-artist"
+                        autocomplete="off">
+
+                    <label class="query-exact">
+                        <input
+                            type="checkbox"
+                            id="delete-artist-exact"
+                            name="delete-artist-exact">
+                        Exact
+                    </label>
+                </div>
+
+                <div class="query-row">
+                    <label for="delete-title">
+                        Title:
+                    </label>
+
+                    <input
+                        type="text"
+                        id="delete-title"
+                        name="delete-title"
+                        autocomplete="off">
+
+                    <label class="query-exact">
+                        <input
+                            type="checkbox"
+                            id="delete-title-exact"
+                            name="delete-title-exact">
+                        Exact
+                    </label>
+                </div>
 
             </div>
 
@@ -1066,9 +1104,85 @@
 
                 <button
                     type="button"
+                    onclick="executeDeleteSearch()">
+                    Search
+                </button>
+
+                <button
+                    type="button"
+                    onclick="clearDeleteSearch()">
+                    Clear
+                </button>
+
+                <button
+                    type="button"
                     onclick="closeDelete()">
                     Close
                 </button>
+
+            </div>
+
+            <div
+                id="deleteResults"
+                class="query-results"
+                style="display: none;">
+
+                <div class="query-results-title">
+                    Results — select a record to delete
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rec ID</th>
+                            <th>Artist</th>
+                            <th>Title</th>
+                            <th>Year</th>
+                            <th>Composer</th>
+                            <th>Orchestra</th>
+                            <th>Conductor</th>
+                            <th>Genre</th>
+                            <th>Format</th>
+                            <th>Label</th>
+                            <th>Catalog ID</th>
+                            <th>Mode</th>
+                            <th>Reissue</th>
+                            <th>DBX</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="deleteResultsBody"></tbody>
+                </table>
+
+            </div>
+
+            <div
+                id="deleteConfirm"
+                class="query-section"
+                style="display: none;">
+
+                <div class="query-section-title">
+                    Confirm Delete
+                </div>
+
+                <p
+                    id="deleteConfirmText"
+                    style="text-align: center;">
+                </p>
+
+                <div class="query-actions">
+                    <button
+                        type="button"
+                        onclick="confirmDeleteRecord()">
+                        Delete
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="cancelDeleteRecord()">
+                        Cancel
+                    </button>
+                </div>
 
             </div>
 
@@ -2825,6 +2939,387 @@
         }
 
 
+        /* ============================================================
+                   DELETE SEARCH — JAVASCRIPT
+           ============================================================ */
+
+        function executeDeleteSearch() {
+
+            const artist =
+                document.getElementById("delete-artist").value.trim();
+
+            const title =
+                document.getElementById("delete-title").value.trim();
+
+            const artistExact =
+                document.getElementById("delete-artist-exact").checked;
+
+            const titleExact =
+                document.getElementById("delete-title-exact").checked;
+
+            if (artist === "" && title === "") {
+
+                alert(
+                    "Enter an Artist or Title to search."
+                );
+
+                document.getElementById("delete-artist").focus();
+
+                return;
+            }
+
+            function sqlQuote(value) {
+                return "'" + value.replace(/'/g, "''") + "'";
+            }
+
+            const predicates = [];
+
+            if (artist !== "") {
+
+                if (artistExact) {
+
+                    predicates.push(
+                        "artist = " +
+                        sqlQuote(artist)
+                    );
+
+                } else {
+
+                    predicates.push(
+                        "artist LIKE " +
+                        sqlQuote("%" + artist + "%")
+                    );
+                }
+            }
+
+            if (title !== "") {
+
+                if (titleExact) {
+
+                    predicates.push(
+                        "title = " +
+                        sqlQuote(title)
+                    );
+
+                } else {
+
+                    predicates.push(
+                        "title LIKE " +
+                        sqlQuote("%" + title + "%")
+                    );
+                }
+            }
+
+            const sql =
+                "SELECT id, artist, title, year, " +
+                "composer, orchestra, conductor, genre, format, " +
+                "label, catalog_number, recording_mode, " +
+                "reissue, dbx_encoded " +
+                "FROM recordings " +
+                "WHERE " + predicates.join(" AND ") +
+                " ORDER BY artist ASC, year ASC;";
+
+            console.log("Musica Delete Search:");
+            console.log(sql);
+
+            fetch("./py/server.py", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    sql: sql
+                })
+            })
+            .then(
+                response => {
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            "Delete search failed: HTTP " +
+                            response.status
+                        );
+                    }
+
+                    return response.json();
+                }
+            )
+            .then(
+                result => {
+
+                    if (result.error) {
+                        throw new Error(result.error);
+                    }
+
+                    displayDeleteResults(result);
+                }
+            )
+            .catch(
+                error => {
+
+                    console.error(
+                        "Delete search error:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to execute Delete search."
+                    );
+                }
+            );
+        }
+
+
+        function displayDeleteResults(result) {
+
+            const tbody =
+                document.getElementById(
+                    "deleteResultsBody"
+                );
+
+            const columnNames = [
+                "id",
+                "artist",
+                "title",
+                "year",
+                "composer",
+                "orchestra",
+                "conductor",
+                "genre",
+                "format",
+                "label",
+                "catalog_number",
+                "recording_mode",
+                "reissue",
+                "dbx_encoded"
+            ];
+
+            tbody.innerHTML = "";
+
+            document.getElementById(
+                "deleteConfirm"
+            ).style.display = "none";
+
+            result.rows.forEach(
+                row => {
+
+                    const tr =
+                        document.createElement("tr");
+
+                    tr.addEventListener(
+                        "click",
+                        function() {
+                            selectDeleteRecord(
+                                result.columns,
+                                row
+                            );
+                        }
+                    );
+
+                    columnNames.forEach(
+                        columnName => {
+
+                            const resultIndex =
+                                result.columns.indexOf(
+                                    columnName
+                                );
+
+                            const td =
+                                document.createElement("td");
+
+                            td.textContent =
+                                row[resultIndex] === null
+                                    ? ""
+                                    : row[resultIndex];
+
+                            tr.appendChild(td);
+                        }
+                    );
+
+                    tbody.appendChild(tr);
+                }
+            );
+
+            document.getElementById(
+                "deleteResults"
+            ).style.display = "block";
+        }
+
+
+        function selectDeleteRecord(columns, row) {
+
+            function valueOf(columnName) {
+                const index = columns.indexOf(columnName);
+
+                if (index < 0 || row[index] === null) {
+                    return "";
+                }
+
+                return String(row[index]);
+            }
+
+            const id = valueOf("id");
+            const artist = valueOf("artist");
+            const title = valueOf("title");
+
+            document.getElementById(
+                "deleteConfirmText"
+            ).textContent =
+                "Delete Record " +
+                id +
+                " — " +
+                artist +
+                " / " +
+                title +
+                "?";
+
+            document.getElementById(
+                "deleteConfirm"
+            ).style.display = "block";
+
+            document.getElementById(
+                "deleteConfirm"
+            ).dataset.recordId = id;
+        }
+
+
+        function confirmDeleteRecord() {
+
+            const id =
+                document.getElementById(
+                    "deleteConfirm"
+                ).dataset.recordId;
+
+            if (!id) {
+
+                alert(
+                    "No record is selected for deletion."
+                );
+
+                return;
+            }
+
+            fetch("./py/server.py", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    operation: "delete",
+                    id: parseInt(id, 10)
+                })
+            })
+            .then(
+                response => {
+
+                    if (!response.ok) {
+
+                        return response.json().then(
+                            result => {
+                                throw new Error(
+                                    result.error ||
+                                    "Delete failed: HTTP " +
+                                    response.status
+                                );
+                            }
+                        );
+                    }
+
+                    return response.json();
+                }
+            )
+            .then(
+                result => {
+
+                    if (result.error) {
+                        throw new Error(result.error);
+                    }
+
+                    console.log(
+                        "Musica Delete successful. Record ID:",
+                        result.id
+                    );
+
+                    alert(
+                        "Record deleted successfully. Record ID: " +
+                        result.id
+                    );
+
+                    document.getElementById(
+                        "deleteConfirm"
+                    ).style.display = "none";
+
+                    document.getElementById(
+                        "deleteConfirm"
+                    ).dataset.recordId = "";
+
+                    executeDeleteSearch();
+                }
+            )
+            .catch(
+                error => {
+
+                    console.error(
+                        "Delete error:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to delete record: " +
+                        error.message
+                    );
+                }
+            );
+        }
+
+
+        function cancelDeleteRecord() {
+
+            document.getElementById(
+                "deleteConfirm"
+            ).style.display = "none";
+
+            document.getElementById(
+                "deleteConfirm"
+            ).dataset.recordId = "";
+        }
+
+
+        function clearDeleteSearch() {
+
+            document.getElementById(
+                "delete-artist"
+            ).value = "";
+
+            document.getElementById(
+                "delete-title"
+            ).value = "";
+
+            document.getElementById(
+                "delete-artist-exact"
+            ).checked = false;
+
+            document.getElementById(
+                "delete-title-exact"
+            ).checked = false;
+
+            document.getElementById(
+                "deleteResultsBody"
+            ).innerHTML = "";
+
+            document.getElementById(
+                "deleteResults"
+            ).style.display = "none";
+
+            cancelDeleteRecord();
+
+            document.getElementById(
+                "delete-artist"
+            ).focus();
+        }
+
+
         function clearModifySearch() {
 
             document.getElementById(
@@ -3026,6 +3521,8 @@
 
 
         function closeDelete() {
+
+            clearDeleteSearch();
 
             document.getElementById("deletePanel").style.display = "none";
         }
