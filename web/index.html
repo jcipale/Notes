@@ -565,6 +565,23 @@
             white-space: nowrap;
         }
 
+        /* ============================================================
+                           EDIT RECORD — CSS
+           ============================================================ */
+
+        #modifyResultsBody tr {
+            cursor: pointer;
+        }
+
+        #modifyResultsBody tr:hover {
+            outline: 2px solid #777;
+        }
+
+        #modifyResultsBody tr.edit-selected {
+            outline: 2px solid #333;
+            font-weight: bold;
+        }
+
             .query-exact {
             display: inline-flex;
             align-items: center;
@@ -729,7 +746,7 @@
             </div>
 
             <div class="query-actions">
-                <button type="button">Add</button>
+                <button type="button" onclick="executeAdd()">Add</button>
                 <button type="button" onclick="clearAddForm()">Clear</button>
                 <button type="button" onclick="closeAdd()">Cancel</button>
             </div>
@@ -765,6 +782,14 @@
                         id="modify-artist"
                         name="modify-artist"
                         autocomplete="off">
+
+                    <label class="query-exact">
+                        <input
+                            type="checkbox"
+                            id="modify-artist-exact"
+                            name="modify-artist-exact">
+                        Exact
+                    </label>
                 </div>
 
                 <div class="query-row">
@@ -777,6 +802,14 @@
                         id="modify-title"
                         name="modify-title"
                         autocomplete="off">
+
+                    <label class="query-exact">
+                        <input
+                            type="checkbox"
+                            id="modify-title-exact"
+                            name="modify-title-exact">
+                        Exact
+                    </label>
                 </div>
 
             </div>
@@ -835,6 +868,168 @@
                     <tbody id="modifyResultsBody"></tbody>
                 </table>
 
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+                         EDIT RECORD FORM — HTML
+         ============================================================ -->
+
+    <div
+        id="editFormPanel"
+        style="display: none;">
+
+        <div class="query-panel">
+
+            <div class="query-title">Edit Record</div>
+
+            <div class="query-section">
+
+                <div class="query-section-title">
+                    Record Information
+                </div>
+
+                <div class="add-form">
+
+                    <label for="edit-id">Rec ID:</label>
+                    <input
+                        type="text"
+                        id="edit-id"
+                        name="edit-id"
+                        readonly>
+
+                    <label for="edit-genre">Genre:</label>
+                    <select id="edit-genre" name="edit-genre">
+                        <option value="Jazz">Jazz</option>
+                        <option value="Rock">Rock</option>
+                        <option value="Country">Country</option>
+                        <option value="Classical">Classical</option>
+                        <option value="Symphonic">Symphonic</option>
+                        <option value="Soundtrack">Soundtrack</option>
+                    </select>
+
+                    <label for="edit-year">Year:</label>
+                    <input
+                        type="text"
+                        id="edit-year"
+                        name="edit-year"
+                        autocomplete="off">
+
+                    <label for="edit-artist">Artist:</label>
+                    <input
+                        type="text"
+                        id="edit-artist"
+                        name="edit-artist"
+                        autocomplete="off">
+
+                    <label for="edit-title">Title:</label>
+                    <input
+                        type="text"
+                        id="edit-title"
+                        name="edit-title"
+                        autocomplete="off">
+
+                    <label for="edit-composer">Composer:</label>
+                    <input
+                        type="text"
+                        id="edit-composer"
+                        name="edit-composer"
+                        autocomplete="off">
+
+                    <label for="edit-conductor">Conductor:</label>
+                    <input
+                        type="text"
+                        id="edit-conductor"
+                        name="edit-conductor"
+                        autocomplete="off">
+
+                    <label for="edit-orchestra">Orchestra:</label>
+                    <input
+                        type="text"
+                        id="edit-orchestra"
+                        name="edit-orchestra"
+                        autocomplete="off">
+
+                    <label for="edit-label">Label:</label>
+                    <input
+                        type="text"
+                        id="edit-label"
+                        name="edit-label"
+                        autocomplete="off">
+
+                    <label for="edit-catalog">Catalog Number:</label>
+                    <input
+                        type="text"
+                        id="edit-catalog"
+                        name="edit-catalog"
+                        autocomplete="off">
+
+                </div>
+
+                <div class="add-bottom-grid">
+
+                    <div class="add-bottom-item">
+                        <label for="edit-format">Format:</label>
+                        <select id="edit-format" name="edit-format">
+                            <option value="LP">LP</option>
+                            <option value="CD">CD</option>
+                            <option value="Cass">Cassette</option>
+                            <option value="RtR">RTR</option>
+                            <option value="78">78 RPM</option>
+                            <option value="4T">4-track</option>
+                            <option value="8T">8-track</option>
+                        </select>
+                    </div>
+
+                    <div class="add-bottom-item">
+                        <label for="edit-mode">Recording Mode:</label>
+                        <select id="edit-mode" name="edit-mode">
+                            <option value="S">Stereo</option>
+                            <option value="M">Mono</option>
+                            <option value="B">Both</option>
+                        </select>
+                    </div>
+
+                    <div class="add-bottom-item">
+                        <label class="add-check">
+                            <input
+                                type="checkbox"
+                                id="edit-reissue"
+                                name="edit-reissue">
+                            Reissue
+                        </label>
+                    </div>
+
+                    <div class="add-bottom-item">
+                        <label class="add-check">
+                            <input
+                                type="checkbox"
+                                id="edit-dbx"
+                                name="edit-dbx">
+                            DBX
+                        </label>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="query-actions">
+                <button
+                    type="button"
+                    onclick="saveEditedRecord()">
+                    Save Changes
+                </button>
+
+                <button
+                    type="button"
+                    onclick="cancelEditRecord()">
+                    Cancel
+                </button>
             </div>
 
         </div>
@@ -1427,6 +1622,7 @@
             document.getElementById("addPanel").style.display = "block";
             document.getElementById("modifyPanel").style.display = "none";
             document.getElementById("deletePanel").style.display = "none";
+            document.getElementById("editFormPanel").style.display = "none";
             document.getElementById("queryPanel").style.display = "none";
             document.getElementById("queryResults").style.display = "none";
 
@@ -1547,6 +1743,203 @@
             document.getElementById("display-catalog-id").checked = false;
             document.getElementById("queryResultsBody").innerHTML = "";
             document.getElementById("queryResults").style.display = "none";
+        }
+
+        function executeAdd() {
+
+            /*
+             * Add Record submits the values currently present in the
+             * Add form to the same server.py dispatcher used by Query.
+             * The dispatcher routes this request to the Add operation.
+             */
+
+            const genre =
+                document.getElementById("add-genre").value.trim();
+
+            const artist =
+                document.getElementById("add-artist").value.trim();
+
+            const title =
+                document.getElementById("add-title").value.trim();
+
+            const yearText =
+                document.getElementById("add-year").value.trim();
+
+            const composer =
+                document.getElementById("add-composer").value.trim();
+
+            const conductor =
+                document.getElementById("add-conductor").value.trim();
+
+            const orchestra =
+                document.getElementById("add-orchestra").value.trim();
+
+            const label =
+                document.getElementById("add-label").value.trim();
+
+            const catalogNumber =
+                document.getElementById("add-catalog").value.trim();
+
+            const format =
+                document.getElementById("add-format").value;
+
+            const mode =
+                document.getElementById("add-mode").value;
+
+            const reissue =
+                document.getElementById("add-reissue").checked;
+
+            const dbx =
+                document.getElementById("add-dbx").checked;
+
+            if (
+                genre === "" ||
+                artist === "" ||
+                title === "" ||
+                yearText === "" ||
+                label === "" ||
+                catalogNumber === ""
+            ) {
+                alert("All required fields must be completed.");
+                return;
+            }
+
+            /* Musica's current year rule is four digits, minimum 1900. */
+            if (
+                !/^\d{4}$/.test(yearText) ||
+                parseInt(yearText, 10) < 1900
+            ) {
+                alert("Year must be four digits and at least 1900.");
+                return;
+            }
+
+            const validFormats = [
+                "LP",
+                "CD",
+                "Cass",
+                "RTR",
+                "78",
+                "4T",
+                "8T"
+            ];
+
+            const validModes = [
+                "M",
+                "S",
+                "B"
+            ];
+
+            if (!validFormats.includes(format)) {
+                alert("A valid Format is required.");
+                return;
+            }
+
+            if (!validModes.includes(mode)) {
+                alert("A valid Recording Mode is required.");
+                return;
+            }
+
+            const classicalGenre =
+                genre === "Classical" ||
+                genre === "Symphonic";
+
+            if (
+                classicalGenre &&
+                (
+                    composer === "" ||
+                    conductor === "" ||
+                    orchestra === ""
+                )
+            ) {
+                alert(
+                    "Composer, Conductor, and Orchestra are required " +
+                    "for Classical and Symphonic recordings."
+                );
+                return;
+            }
+
+            const record = {
+                artist: artist,
+                title: title,
+                year: yearText,
+                composer: classicalGenre ? composer : null,
+                orchestra: classicalGenre ? orchestra : null,
+                conductor: classicalGenre ? conductor : null,
+                genre: genre,
+                format: format,
+                label: label,
+                catalog_number: catalogNumber,
+                recording_mode: mode,
+                reissue: reissue,
+                dbx_encoded: dbx
+            };
+
+            console.log("Musica Add:");
+            console.log(record);
+
+            fetch("./py/server.py", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    operation: "add",
+                    record: record
+                })
+            })
+            .then(
+                response => {
+
+                    if (!response.ok) {
+
+                        return response.json().then(
+                            result => {
+                                throw new Error(
+                                    result.error ||
+                                    "Add failed: HTTP " +
+                                    response.status
+                                );
+                            }
+                        );
+                    }
+
+                    return response.json();
+                }
+            )
+            .then(
+                result => {
+
+                    if (result.error) {
+                        throw new Error(result.error);
+                    }
+
+                    console.log(
+                        "Musica Add successful. Record ID:",
+                        result.id
+                    );
+
+                    alert(
+                        "Record added successfully. Record ID: " +
+                        result.id
+                    );
+
+                    resetAddForm();
+                }
+            )
+            .catch(
+                error => {
+
+                    console.error(
+                        "Add error:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to add record: " +
+                        error.message
+                    );
+                }
+            );
         }
 
         function executeQuery() {
@@ -1925,9 +2318,18 @@
             const title =
                 document.getElementById("modify-title").value.trim();
 
+            const artistExact =
+                document.getElementById("modify-artist-exact").checked;
+
+            const titleExact =
+                document.getElementById("modify-title-exact").checked;
+
             /*
              * Artist and Title are independent search criteria.
              * At least one must be supplied.
+             *
+             * Unchecked Exact uses substring matching. Checked Exact
+             * requires the complete field value to match.
              */
 
             if (artist === "" && title === "") {
@@ -1949,18 +2351,38 @@
 
             if (artist !== "") {
 
-                predicates.push(
-                    "artist LIKE " +
-                    sqlQuote("%" + artist + "%")
-                );
+                if (artistExact) {
+
+                    predicates.push(
+                        "artist = " +
+                        sqlQuote(artist)
+                    );
+
+                } else {
+
+                    predicates.push(
+                        "artist LIKE " +
+                        sqlQuote("%" + artist + "%")
+                    );
+                }
             }
 
             if (title !== "") {
 
-                predicates.push(
-                    "title LIKE " +
-                    sqlQuote("%" + title + "%")
-                );
+                if (titleExact) {
+
+                    predicates.push(
+                        "title = " +
+                        sqlQuote(title)
+                    );
+
+                } else {
+
+                    predicates.push(
+                        "title LIKE " +
+                        sqlQuote("%" + title + "%")
+                    );
+                }
             }
 
             /*
@@ -1981,7 +2403,7 @@
             console.log("Musica Modify Search:");
             console.log(sql);
 
-            fetch("./py/server_query_api.py", {
+            fetch("./py/server.py", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -2075,6 +2497,13 @@
                     const tr =
                         document.createElement("tr");
 
+                    tr.addEventListener(
+                        "click",
+                        function() {
+                            selectEditRecord(result.columns, row);
+                        }
+                    );
+
                     columnNames.forEach(
                         columnName => {
 
@@ -2105,6 +2534,297 @@
         }
 
 
+        function selectEditRecord(columns, row) {
+
+            /*
+             * The selected database id identifies the record being
+             * edited. It is displayed read-only and is never an
+             * editable form field. Every other field is loaded from
+             * the selected database row, including blank/NULL fields.
+             */
+
+            function valueOf(columnName) {
+                const index = columns.indexOf(columnName);
+
+                if (index < 0 || row[index] === null) {
+                    return "";
+                }
+
+                return String(row[index]);
+            }
+
+            document.getElementById("edit-id").value =
+                valueOf("id");
+
+            document.getElementById("edit-genre").value =
+                valueOf("genre");
+
+            document.getElementById("edit-year").value =
+                valueOf("year");
+
+            document.getElementById("edit-artist").value =
+                valueOf("artist");
+
+            document.getElementById("edit-title").value =
+                valueOf("title");
+
+            document.getElementById("edit-composer").value =
+                valueOf("composer");
+
+            document.getElementById("edit-conductor").value =
+                valueOf("conductor");
+
+            document.getElementById("edit-orchestra").value =
+                valueOf("orchestra");
+
+            document.getElementById("edit-label").value =
+                valueOf("label");
+
+            document.getElementById("edit-catalog").value =
+                valueOf("catalog_number");
+
+            document.getElementById("edit-format").value =
+                valueOf("format");
+
+            document.getElementById("edit-mode").value =
+                valueOf("recording_mode");
+
+            document.getElementById("edit-reissue").checked =
+                valueOf("reissue") === "Y";
+
+            document.getElementById("edit-dbx").checked =
+                valueOf("dbx_encoded") === "Y";
+
+            document.getElementById("modifyPanel").style.display = "none";
+            document.getElementById("editFormPanel").style.display = "block";
+
+            document.getElementById("edit-artist").focus();
+        }
+
+
+        function cancelEditRecord() {
+
+            /*
+             * Return to Edit search without leaving Modify. The
+             * Add/Edit/Delete navigation remains visible throughout.
+             */
+
+            document.getElementById("editFormPanel").style.display = "none";
+            document.getElementById("modifyPanel").style.display = "block";
+            document.getElementById("modify-artist").focus();
+        }
+
+
+        function saveEditedRecord() {
+
+            /*
+             * Confirm the complete edited record before sending it
+             * to the server. The user remains inside Modify either
+             * way; Cancel/No never discards the form contents.
+             */
+            if (!confirm("Confirm changes before saving?")) {
+                return;
+            }
+
+            const idText =
+                document.getElementById("edit-id").value.trim();
+
+            const genre =
+                document.getElementById("edit-genre").value.trim();
+
+            const artist =
+                document.getElementById("edit-artist").value.trim();
+
+            const title =
+                document.getElementById("edit-title").value.trim();
+
+            const yearText =
+                document.getElementById("edit-year").value.trim();
+
+            const composer =
+                document.getElementById("edit-composer").value.trim();
+
+            const conductor =
+                document.getElementById("edit-conductor").value.trim();
+
+            const orchestra =
+                document.getElementById("edit-orchestra").value.trim();
+
+            const label =
+                document.getElementById("edit-label").value.trim();
+
+            const catalogNumber =
+                document.getElementById("edit-catalog").value.trim();
+
+            const format =
+                document.getElementById("edit-format").value;
+
+            const mode =
+                document.getElementById("edit-mode").value;
+
+            const reissue =
+                document.getElementById("edit-reissue").checked;
+
+            const dbx =
+                document.getElementById("edit-dbx").checked;
+
+            if (idText === "") {
+                alert("No record is selected for editing.");
+                return;
+            }
+
+            if (
+                genre === "" ||
+                artist === "" ||
+                title === "" ||
+                yearText === "" ||
+                label === "" ||
+                catalogNumber === ""
+            ) {
+                alert("All required fields must be completed.");
+                return;
+            }
+
+            if (
+                !/^\d{1,}$/.test(idText)
+            ) {
+                alert("The selected Record ID is invalid.");
+                return;
+            }
+
+            if (
+                !/^\d{4}$/.test(yearText) ||
+                parseInt(yearText, 10) < 1900
+            ) {
+                alert("Year must be four digits and at least 1900.");
+                return;
+            }
+
+            const validFormats = [
+                "LP",
+                "CD",
+                "Cass",
+                "RTR",
+                "78",
+                "4T",
+                "8T"
+            ];
+
+            const validModes = [
+                "M",
+                "S",
+                "B"
+            ];
+
+            if (!validFormats.includes(format)) {
+                alert("A valid Format is required.");
+                return;
+            }
+
+            if (!validModes.includes(mode)) {
+                alert("A valid Recording Mode is required.");
+                return;
+            }
+
+            /*
+             * Unlike Add(), Edit() never removes Composer, Conductor,
+             * or Orchestra because of the selected Genre. The form
+             * represents the complete existing database record.
+             */
+            const record = {
+                id: parseInt(idText, 10),
+                artist: artist,
+                title: title,
+                year: yearText,
+                composer: composer === "" ? null : composer,
+                orchestra: orchestra === "" ? null : orchestra,
+                conductor: conductor === "" ? null : conductor,
+                genre: genre,
+                format: format,
+                label: label,
+                catalog_number: catalogNumber,
+                recording_mode: mode,
+                reissue: reissue,
+                dbx_encoded: dbx
+            };
+
+            console.log("Musica Edit:");
+            console.log(record);
+
+            fetch("./py/server.py", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    operation: "edit",
+                    record: record
+                })
+            })
+            .then(
+                response => {
+
+                    if (!response.ok) {
+
+                        return response.json().then(
+                            result => {
+                                throw new Error(
+                                    result.error ||
+                                    "Edit failed: HTTP " +
+                                    response.status
+                                );
+                            }
+                        );
+                    }
+
+                    return response.json();
+                }
+            )
+            .then(
+                result => {
+
+                    if (result.error) {
+                        throw new Error(result.error);
+                    }
+
+                    console.log(
+                        "Musica Edit successful. Record ID:",
+                        result.id
+                    );
+
+                    alert(
+                        "Record updated successfully. Record ID: " +
+                        result.id
+                    );
+
+                    document.getElementById(
+                        "editFormPanel"
+                    ).style.display = "none";
+
+                    document.getElementById(
+                        "modifyPanel"
+                    ).style.display = "block";
+
+                    executeModifySearch();
+                }
+            )
+            .catch(
+                error => {
+
+                    console.error(
+                        "Edit error:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to update record: " +
+                        error.message
+                    );
+                }
+            );
+        }
+
+
         function clearModifySearch() {
 
             document.getElementById(
@@ -2116,11 +2836,23 @@
             ).value = "";
 
             document.getElementById(
+                "modify-artist-exact"
+            ).checked = false;
+
+            document.getElementById(
+                "modify-title-exact"
+            ).checked = false;
+
+            document.getElementById(
                 "modifyResultsBody"
             ).innerHTML = "";
 
             document.getElementById(
                 "modifyResults"
+            ).style.display = "none";
+
+            document.getElementById(
+                "editFormPanel"
             ).style.display = "none";
 
             document.getElementById(
@@ -2146,6 +2878,10 @@
 
             document.getElementById(
                 "modifyResults"
+            ).style.display = "none";
+
+            document.getElementById(
+                "editFormPanel"
             ).style.display = "none";
         }
 
@@ -2174,6 +2910,7 @@
             document.getElementById("addPanel").style.display = "none";
             document.getElementById("modifyPanel").style.display = "none";
             document.getElementById("deletePanel").style.display = "none";
+            document.getElementById("editFormPanel").style.display = "none";
 
             if (usageType === "Personal") {
                 enterPU();
@@ -2209,6 +2946,7 @@
             document.getElementById("addPanel").style.display = "none";
             document.getElementById("modifyPanel").style.display = "none";
             document.getElementById("deletePanel").style.display = "none";
+            document.getElementById("editFormPanel").style.display = "none";
         }
 
 
@@ -2227,6 +2965,7 @@
             document.getElementById("addPanel").style.display = "none";
             document.getElementById("modifyPanel").style.display = "none";
             document.getElementById("deletePanel").style.display = "none";
+            document.getElementById("editFormPanel").style.display = "none";
 
             document.getElementById("modifyResultsBody").innerHTML = "";
             document.getElementById("modifyResults").style.display = "none";
@@ -2253,6 +2992,7 @@
             document.getElementById("addPanel").style.display = "none";
             document.getElementById("modifyPanel").style.display = "block";
             document.getElementById("deletePanel").style.display = "none";
+            document.getElementById("editFormPanel").style.display = "none";
             document.getElementById("queryPanel").style.display = "none";
             document.getElementById("queryResults").style.display = "none";
 

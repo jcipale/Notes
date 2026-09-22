@@ -367,6 +367,301 @@ def execute_add(record):
         return None, str(error)
 
 
+def execute_edit(record):
+
+    # Edit updates the complete existing record identified by id.
+    # The id is database-controlled and is never modified.
+
+    config_file = get_config_path()
+
+    settings = read_settings(
+        config_file
+    )
+
+    if "ERROR" in settings:
+
+        return None, settings["ERROR"]
+
+    db_path = os.path.join(
+        os.path.expanduser(
+            settings.get(
+                "DPATH",
+                ""
+            )
+        ),
+        settings.get(
+            "DBASE",
+            ""
+        )
+    )
+
+    if not settings.get("DPATH"):
+
+        return None, "DPATH is not configured."
+
+    if not settings.get("DBASE"):
+
+        return None, "DBASE is not configured."
+
+    if not isinstance(
+        record,
+        dict
+    ):
+
+        return None, "Missing record data."
+
+    record_id = record.get("id")
+
+    try:
+
+        record_id = int(record_id)
+
+    except (
+        TypeError,
+        ValueError
+    ):
+
+        return None, "Invalid Record ID."
+
+    if record_id <= 0:
+
+        return None, "Invalid Record ID."
+
+    required = (
+        "artist",
+        "title",
+        "year",
+        "genre",
+        "format"
+    )
+
+    for field in required:
+
+        value = record.get(
+            field
+        )
+
+        if value is None or str(value).strip() == "":
+
+            return None, (
+                "Missing required field: "
+                + field
+            )
+
+    artist = str(
+        record["artist"]
+    ).strip()
+
+    title = str(
+        record["title"]
+    ).strip()
+
+    genre = str(
+        record["genre"]
+    ).strip()
+
+    fmt = str(
+        record["format"]
+    ).strip()
+
+    try:
+
+        year = int(
+            record["year"]
+        )
+
+    except (
+        TypeError,
+        ValueError
+    ):
+
+        return None, "Invalid year."
+
+    if year < 1900:
+
+        return None, "Year must be >= 1900."
+
+    valid_genres = (
+        "Jazz",
+        "Rock",
+        "Country",
+        "Classical",
+        "Symphonic",
+        "Soundtrack"
+    )
+
+    if genre not in valid_genres:
+
+        return None, "Invalid genre."
+
+    valid_formats = (
+        "LP",
+        "CD",
+        "Cass",
+        "RtR",
+        "78",
+        "4T",
+        "8T"
+    )
+
+    if fmt not in valid_formats:
+
+        return None, "Invalid format."
+
+    recording_mode = record.get(
+        "recording_mode"
+    )
+
+    if recording_mode not in (
+        "M",
+        "S",
+        "B"
+    ):
+
+        return None, "Invalid recording mode."
+
+    def optional_text(value):
+
+        if value is None:
+
+            return None
+
+        value = str(
+            value
+        ).strip()
+
+        return value if value else None
+
+    composer = optional_text(
+        record.get("composer")
+    )
+
+    orchestra = optional_text(
+        record.get("orchestra")
+    )
+
+    conductor = optional_text(
+        record.get("conductor")
+    )
+
+    label = optional_text(
+        record.get("label")
+    )
+
+    catalog = optional_text(
+        record.get("catalog_number")
+    )
+
+    # IMPORTANT: Edit preserves these fields exactly as supplied.
+    # Genre does not cause them to be hidden, populated, or cleared.
+
+    reissue = (
+        "Y"
+        if record.get("reissue")
+        else None
+    )
+
+    dbx_encoded = (
+        "Y"
+        if record.get("dbx_encoded")
+        else None
+    )
+
+    sql = """
+    UPDATE recordings
+    SET
+        artist = ?,
+        title = ?,
+        year = ?,
+        composer = ?,
+        orchestra = ?,
+        conductor = ?,
+        genre = ?,
+        format = ?,
+        label = ?,
+        catalog_number = ?,
+        recording_mode = ?,
+        reissue = ?,
+        dbx_encoded = ?
+    WHERE id = ?
+    """
+
+    connection = None
+
+    try:
+
+        connection = sqlite3.connect(
+            os.path.expanduser(
+                db_path
+            )
+        )
+
+        connection.execute(
+            "PRAGMA foreign_keys=ON;"
+        )
+
+        connection.execute(
+            "PRAGMA busy_timeout=5000;"
+        )
+
+        cursor = connection.cursor()
+
+        cursor.execute(
+            sql,
+            (
+                artist,
+                title,
+                year,
+                composer,
+                orchestra,
+                conductor,
+                genre,
+                fmt,
+                label,
+                catalog,
+                recording_mode,
+                reissue,
+                dbx_encoded,
+                record_id
+            )
+        )
+
+        if cursor.rowcount != 1:
+
+            connection.rollback()
+            connection.close()
+
+            return None, (
+                "Record ID " +
+                str(record_id) +
+                " was not found."
+            )
+
+        connection.commit()
+
+        connection.close()
+
+        return {
+            "id": record_id
+        }, None
+
+    except sqlite3.IntegrityError as error:
+
+        if connection is not None:
+
+            connection.close()
+
+        return None, str(error)
+
+    except sqlite3.OperationalError as error:
+
+        if connection is not None:
+
+            connection.close()
+
+        return None, str(error)
+
+
 class MusicaNotesHandler(
     SimpleHTTPRequestHandler
 ):
@@ -412,198 +707,246 @@ class MusicaNotesHandler(
 
     def do_POST(self):
 
-    #
-    # /py/server.py handles both Add and Query requests.
-    #
-    # Read the JSON request once, then dispatch based on
-    # the contents of the request.
-    #
+        #
+        # /py/server.py handles Add, Edit, and Query requests.
+        # Read the JSON request once, then dispatch based on the
+        # contents of the request.
+        #
 
         if self.path == "/py/server.py":
 
             content_length = self.headers.get(
                 "Content-Length"
-        )
-
-        if content_length is None:
-
-            self.send_json_error(
-                400,
-                "Missing Content-Length"
             )
 
-            return
-
-        try:
-
-            length = int(
-                content_length
-            )
-
-        except ValueError:
-
-            self.send_json_error(
-                400,
-                "Invalid Content-Length"
-            )
-
-            return
-
-        try:
-
-            body = self.rfile.read(
-                length
-            )
-
-            request = json.loads(
-                body.decode(
-                    "utf-8"
-                )
-            )
-
-        except (
-            UnicodeDecodeError,
-            json.JSONDecodeError
-        ):
-
-            self.send_json_error(
-                400,
-                "Invalid JSON"
-            )
-
-            return
-
-
-        #
-        # Add Record request.
-        #
-
-        if request.get(
-            "operation"
-        ) == "add":
-
-            result, error = execute_add(
-                request.get(
-                    "record"
-                )
-            )
-
-            if error is not None:
+            if content_length is None:
 
                 self.send_json_error(
                     400,
-                    error
+                    "Missing Content-Length"
                 )
 
                 return
 
-            response = json.dumps(
-                result
-            )
+            try:
 
-            self.send_response(
-                200
-            )
-
-            self.send_header(
-                "Content-Type",
-                "application/json"
-            )
-
-            self.send_header(
-                "Content-Length",
-                str(
-                    len(
-                        response.encode(
-                            "utf-8"
-                        )
-                    )
+                length = int(
+                    content_length
                 )
-            )
 
-            self.end_headers()
-
-            self.wfile.write(
-                response.encode(
-                    "utf-8"
-                )
-            )
-
-            return
-
-
-        #
-        # Query request.
-        #
-
-        sql = request.get(
-            "sql"
-        )
-
-        if isinstance(
-            sql,
-            str
-        ) and sql.strip():
-
-            result, error = execute_query(
-                sql
-            )
-
-            if error is not None:
+            except ValueError:
 
                 self.send_json_error(
                     400,
-                    error
+                    "Invalid Content-Length"
                 )
 
                 return
 
-            response = json.dumps(
-                result
-            )
+            try:
 
-            self.send_response(
-                200
-            )
+                body = self.rfile.read(
+                    length
+                )
 
-            self.send_header(
-                "Content-Type",
-                "application/json"
-            )
+                request = json.loads(
+                    body.decode(
+                        "utf-8"
+                    )
+                )
 
-            self.send_header(
-                "Content-Length",
-                str(
-                    len(
-                        response.encode(
-                            "utf-8"
+            except (
+                UnicodeDecodeError,
+                json.JSONDecodeError
+            ):
+
+                self.send_json_error(
+                    400,
+                    "Invalid JSON"
+                )
+
+                return
+
+            #
+            # Add Record request.
+            #
+
+            if request.get(
+                "operation"
+            ) == "add":
+
+                result, error = execute_add(
+                    request.get(
+                        "record"
+                    )
+                )
+
+                if error is not None:
+
+                    self.send_json_error(
+                        400,
+                        error
+                    )
+
+                    return
+
+                response = json.dumps(
+                    result
+                )
+
+                self.send_response(
+                    200
+                )
+
+                self.send_header(
+                    "Content-Type",
+                    "application/json"
+                )
+
+                self.send_header(
+                    "Content-Length",
+                    str(
+                        len(
+                            response.encode(
+                                "utf-8"
+                            )
                         )
                     )
                 )
+
+                self.end_headers()
+
+                self.wfile.write(
+                    response.encode(
+                        "utf-8"
+                    )
+                )
+
+                return
+
+            #
+            # Edit Record request.
+            #
+
+            if request.get(
+                "operation"
+            ) == "edit":
+
+                result, error = execute_edit(
+                    request.get(
+                        "record"
+                    )
+                )
+
+                if error is not None:
+
+                    self.send_json_error(
+                        400,
+                        error
+                    )
+
+                    return
+
+                response = json.dumps(
+                    result
+                )
+
+                self.send_response(
+                    200
+                )
+
+                self.send_header(
+                    "Content-Type",
+                    "application/json"
+                )
+
+                self.send_header(
+                    "Content-Length",
+                    str(
+                        len(
+                            response.encode(
+                                "utf-8"
+                            )
+                        )
+                    )
+                )
+
+                self.end_headers()
+
+                self.wfile.write(
+                    response.encode(
+                        "utf-8"
+                    )
+                )
+
+                return
+
+            #
+            # Query request.
+            #
+
+            sql = request.get(
+                "sql"
             )
 
-            self.end_headers()
+            if isinstance(
+                sql,
+                str
+            ) and sql.strip():
 
-            self.wfile.write(
-                response.encode(
-                    "utf-8"
+                result, error = execute_query(
+                    sql
                 )
+
+                if error is not None:
+
+                    self.send_json_error(
+                        400,
+                        error
+                    )
+
+                    return
+
+                response = json.dumps(
+                    result
+                )
+
+                self.send_response(
+                    200
+                )
+
+                self.send_header(
+                    "Content-Type",
+                    "application/json"
+                )
+
+                self.send_header(
+                    "Content-Length",
+                    str(
+                        len(
+                            response.encode(
+                                "utf-8"
+                            )
+                        )
+                    )
+                )
+
+                self.end_headers()
+
+                self.wfile.write(
+                    response.encode(
+                        "utf-8"
+                    )
+                )
+
+                return
+
+            self.send_json_error(
+                400,
+                "Invalid request."
             )
 
             return
-
-
-        #
-        # The request was neither Add nor Query.
-        #
-
-        self.send_json_error(
-            400,
-            "Invalid request."
-        )
-
-        return
-
 
         #
         # Existing SQL query API request.
@@ -614,7 +957,6 @@ class MusicaNotesHandler(
             self.send_query()
 
             return
-
 
         #
         # CGI compatibility request.
@@ -628,7 +970,6 @@ class MusicaNotesHandler(
 
             return
 
-
         #
         # All other POST requests are unsupported.
         #
@@ -637,6 +978,7 @@ class MusicaNotesHandler(
             404,
             "Not Found"
         )
+
     # CHANGED: Handle a structured Add Record request.
     #
     # The browser supplies record data, not SQL. This keeps the
@@ -1188,6 +1530,65 @@ def run_cgi():
 
         print(
             "Content-Type: application/json"
+        )
+        print()
+        print(
+            response
+        )
+
+        return
+
+
+    #
+    # CGI Edit Record request.
+    #
+
+    if request.get(
+        "operation"
+    ) == "edit":
+
+        result, error = execute_edit(
+            request.get(
+                "record"
+            )
+        )
+
+        if error is not None:
+
+            response = json.dumps(
+                {
+                    "error": error
+                }
+            )
+
+            print(
+                "Status: 400"
+            )
+            print(
+                "Content-Type: application/json"
+            )
+            print()
+            print(
+                response
+            )
+
+            return
+
+        response = json.dumps(
+            result
+        )
+
+        print(
+            "Content-Type: application/json"
+        )
+        print(
+            "Content-Length: {}".format(
+                len(
+                    response.encode(
+                        "utf-8"
+                    )
+                )
+            )
         )
         print()
         print(
