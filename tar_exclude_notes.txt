@@ -1,0 +1,6 @@
+Notes/.git
+Notes/.git/*
+Notes/__pycache__
+Notes/*/__pycache__
+Notes/*.pyc
+Notes/*/*.pyc

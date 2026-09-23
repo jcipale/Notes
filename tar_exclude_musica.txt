@@ -1,0 +1,7 @@
+Notes/web/*
+Notes/musica.db
+Notes/*.db-bup
+Notes/.git
+Notes/.git/*
+Notes/*/__pycache__
+Notes/*/*.pyc
