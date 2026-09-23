@@ -22,6 +22,9 @@ set answer = $<
 if ("$answer" == "Y" || "$answer" == "y") then
     echo "Build Notes release..."
 	# commands to run
+	git add  Musica_v1.1.tar.gz RELEASE/.
+	git commit -m "Musica Release delviered"
+	git push
 else if ("$answer" == "N" || "$answer" == "n") then
     echo "Check tar exclude file for correctness."
 endif
@@ -50,6 +53,9 @@ set answer = $<
 if ("$answer" == "Y" || "$answer" == "y") then
     echo "Build Notes release..."
 	# commands to run
+	git add  Notes_v1.0.tar.gz RELEASE/.
+	git commit -m "Musica Release delviered"
+	git push
 else if ("$answer" == "N" || "$answer" == "n") then
     echo "Check tar exclude file for correctness."
 endif
