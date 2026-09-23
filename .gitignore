@@ -1,0 +1,17 @@
+# Local installation configuration
+web/config/config.dta
+
+# SQLite databases
+*.db
+*.db-bup
+
+# Python bytecode/cache
+__pycache__/
+*.pyc
+
+# Editor backup and lock files
+*~
+.~lock.*
+
+# User configured files for testing/validation
+web/etc/security.txt
