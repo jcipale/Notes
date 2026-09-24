@@ -13,3 +13,4 @@
 ./docs/.~lock*
 ./tar_exclude*.txt
 ./Musica*.gz
+./RELEASE/*

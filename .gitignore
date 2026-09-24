@@ -19,3 +19,4 @@ web/etc/security.txt
 *Ignore tarballs
 ./*gz
 ./web/*gz
+./RELEASE/*.gz

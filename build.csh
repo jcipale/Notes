@@ -56,7 +56,8 @@ else if ("$answer" == "N" || "$answer" == "n") then
     echo "Check tar exclude file for correctness."
 endif
 
-git add ./RELEASE/*.gz
+git add ./RELEASE/Musica_v1.1.tar.gz
+git add ./RELEASE/Notes_v1.0.tar.gz
 git commit -m "Commit tarball builds"
 git push
 
