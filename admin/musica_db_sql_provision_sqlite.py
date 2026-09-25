@@ -17,7 +17,6 @@ Default (writes):
 Non-responsibilities:
 - No clean-slate/reset
 - No ownership enforcement/override flags
-- No configurable DB path (fixed: ~/Musica/musica.db)
 - No directory creation (installer/layout handles directories)
 """
 
@@ -30,13 +29,14 @@ import sys
 from pathlib import Path
 from typing import Tuple
 
-MUSICA_BASE_DIR = Path.home() / "Musica"
-DB_FILE = MUSICA_BASE_DIR / "musica.db"
-
-# Where to find install SQL scripts.
-# Expect: ~/Musica/admin/musica_db_sql_provision.py -> parent is ~/Musica
+# Locate the installed Musica configuration.
 SCRIPT_DIR = Path(__file__).resolve().parent
-INSTALL_SQL_DIR = SCRIPT_DIR.parent / "sql" / "install"
+MUSICA_CONFIG_FILE = SCRIPT_DIR.parent / "config" / "musica.conf"
+
+# These are populated from musica.conf.
+MUSICA_BASE_DIR = None
+DB_FILE = None
+INSTALL_SQL_DIR = None
 
 # Increment when you introduce real migrations
 SCHEMA_VERSION = 1
@@ -52,6 +52,72 @@ REQUIRED_INSTALL_TABLES: Tuple[str, ...] = ("recordings",)
 OPTIONAL_INSTALL_TABLES: Tuple[str, ...] = ("audit_recordings", "stg_recordings")
 OPTIONAL_INSTALL_VIEWS: Tuple[str, ...] = ("v_recordings_display",)
 
+# System configuration read
+def load_config() -> None:
+    global MUSICA_BASE_DIR
+    global DB_FILE
+    global INSTALL_SQL_DIR
+
+    if not MUSICA_CONFIG_FILE.is_file():
+        raise SystemExit(
+            f"ERROR: Musica configuration file not found: "
+            f"{MUSICA_CONFIG_FILE}"
+        )
+
+    config = {}
+
+    for raw in MUSICA_CONFIG_FILE.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+
+        if not line or line.startswith("#") or line.startswith(";"):
+            continue
+
+        for marker in ("#", ";"):
+            if marker in line:
+                line = line.split(marker, 1)[0].rstrip()
+
+        if not line:
+            continue
+
+        if "=" not in line:
+            raise SystemExit(
+                f"ERROR: Invalid configuration line in "
+                f"{MUSICA_CONFIG_FILE}: {raw}"
+            )
+
+        key, value = line.split("=", 1)
+        config[key.strip()] = value.strip()
+
+    if "MUSICA_BASE_DIR" not in config:
+        raise SystemExit(
+            f"ERROR: MUSICA_BASE_DIR not found in {MUSICA_CONFIG_FILE}"
+        )
+
+    base_dir = config["MUSICA_BASE_DIR"]
+
+    # Expand the simple ${KEY} references used by musica.conf.
+    for key, value in config.items():
+        config[key] = value.replace(
+            "${MUSICA_BASE_DIR}",
+            base_dir
+        )
+
+    if "MUSICA_DB_FILE" not in config:
+        raise SystemExit(
+            f"ERROR: MUSICA_DB_FILE not found in {MUSICA_CONFIG_FILE}"
+        )
+
+    if "MUSICA_SQL_DIR" not in config:
+        raise SystemExit(
+            f"ERROR: MUSICA_SQL_DIR not found in {MUSICA_CONFIG_FILE}"
+        )
+
+    MUSICA_BASE_DIR = Path(config["MUSICA_BASE_DIR"]).expanduser()
+    DB_FILE = Path(config["MUSICA_DB_FILE"]).expanduser()
+    INSTALL_SQL_DIR = (
+        Path(config["MUSICA_SQL_DIR"]).expanduser() / "install"
+    )
+# End config read
 
 def connect_rw() -> sqlite3.Connection:
     if not DB_FILE.parent.is_dir():
@@ -274,8 +340,14 @@ def main() -> None:
     ap.add_argument("--check", action="store_true", help="Check DB/schema/user only (no changes).")
     args = ap.parse_args()
 
+    # Print/Display primary config data
     print("Musica SQLite Provisioning")
     print("--------------------------")
+
+    load_config()
+
+    print("Config file:", MUSICA_CONFIG_FILE)
+    print("Base dir:", MUSICA_BASE_DIR)
     print("DB file:", DB_FILE)
     print("install SQL dir:", INSTALL_SQL_DIR)
 

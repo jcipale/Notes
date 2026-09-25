@@ -8,20 +8,35 @@ import platform
 import shutil
 import sqlite3
 
+##########################################################
+#    Surgically remove
+### Contract: install target is ALWAYS ~/Musica
+#MUSICA_BASE_DIR = Path.home() / "Musica"
+#MUSICA_CONFIG_DIR = MUSICA_BASE_DIR / "config"
+#MUSICA_DATA_DIR = MUSICA_BASE_DIR / "data"
+## MUSICA_LOG_DIR = MUSICA_BASE_DIR / "logs"
+#
+## Contract: DB file lives at ~/Musica/musica.db
+#MUSICA_DB_FILE = MUSICA_BASE_DIR / "musica.db"
+#
+## Contract: config lives in ~/Musica/config, built from musica.conf_temp if missing
+#MUSICA_CONF_PATH = MUSICA_CONFIG_DIR / "musica.conf"
+#MUSICA_CONF_TEMPLATE = MUSICA_CONFIG_DIR / "musica.conf-template"
+#########################################################
 
-# Contract: install target is ALWAYS ~/Musica
-MUSICA_BASE_DIR = Path.home() / "Musica"
-MUSICA_CONFIG_DIR = MUSICA_BASE_DIR / "config"
-MUSICA_DATA_DIR = MUSICA_BASE_DIR / "data"
-# MUSICA_LOG_DIR = MUSICA_BASE_DIR / "logs"
+#          NEW CODE for Path location prompt
+#########################################################
+# Default Musica installation location.
+# The user may override this during installation.
+MUSICA_BASE_DIR = None
+MUSICA_CONFIG_DIR = None
+MUSICA_DATA_DIR = None
+# MUSICA_LOG_DIR = None
 
-# Contract: DB file lives at ~/Musica/musica.db
-MUSICA_DB_FILE = MUSICA_BASE_DIR / "musica.db"
-
-# Contract: config lives in ~/Musica/config, built from musica.conf_temp if missing
-MUSICA_CONF_PATH = MUSICA_CONFIG_DIR / "musica.conf"
-MUSICA_CONF_TEMPLATE = MUSICA_CONFIG_DIR / "musica.conf-template"
-
+MUSICA_DB_FILE = None
+MUSICA_CONF_PATH = None
+MUSICA_CONF_TEMPLATE = None
+#########################################################
 
 def refuse_root():
     if hasattr(os, "geteuid") and os.geteuid() == 0:
@@ -36,9 +51,46 @@ def detect_os():
     print(f"Platform string         : {platform.platform()}")
     return system
 
+#          NEW CODE for Path location prompt
+#########################################################
+def select_install_path():
+    global MUSICA_BASE_DIR
+    global MUSICA_CONFIG_DIR
+    global MUSICA_DATA_DIR
+    global MUSICA_DB_FILE
+    global MUSICA_CONF_PATH
+    global MUSICA_CONF_TEMPLATE
 
+    print("\nSTEP 2: Select Musica installation path")
+    print("----------------------------------------")
+
+    default_path = Path.home() / "Musica"
+
+    print(f"Default: {default_path}")
+    entered_path = input("Musica installation path [Enter for default]: ").strip()
+
+    if entered_path:
+        MUSICA_BASE_DIR = Path(entered_path).expanduser()
+    else:
+        MUSICA_BASE_DIR = default_path
+
+    if not MUSICA_BASE_DIR.is_absolute():
+        print(f"ERROR: Installation path must be absolute: {MUSICA_BASE_DIR}")
+        sys.exit(1)
+
+    MUSICA_CONFIG_DIR = MUSICA_BASE_DIR / "config"
+    MUSICA_DATA_DIR = MUSICA_BASE_DIR / "data"
+    # MUSICA_LOG_DIR = MUSICA_BASE_DIR / "logs"
+
+    MUSICA_DB_FILE = MUSICA_BASE_DIR / "musica.db"
+    MUSICA_CONF_PATH = MUSICA_CONFIG_DIR / "musica.conf"
+    MUSICA_CONF_TEMPLATE = MUSICA_CONFIG_DIR / "musica.conf-template"
+
+    print(f"Selected Musica base directory: {MUSICA_BASE_DIR}")
+
+#########################################################
 def verify_existing_layout():
-    print("\nSTEP 2: Verifying existing install layout (no modifications)")
+    print("\nSTEP 3: Verifying existing install layout (no modifications)")
     print("-------------------------------------------------------------")
 
     required = [
@@ -60,7 +112,7 @@ def verify_existing_layout():
 
 
 def generate_config_if_missing():
-    print("\nSTEP 3: Verifying musica.conf (generate only if missing)")
+    print("\nSTEP 4: Verifying musica.conf (generate only if missing)")
     print("-------------------------------------------------------------")
 
     if MUSICA_CONF_PATH.exists():
@@ -86,7 +138,7 @@ def validate_config_syntax_only():
     Syntax-only validation: KEY=VALUE with comments/blanks allowed.
     Does NOT expand ${VAR}, and does NOT mkdir anything.
     """
-    print("\nSTEP 4: Validating musica.conf syntax (no expansions, no side effects)")
+    print("\nSTEP 5: Validating musica.conf syntax (no expansions, no side effects)")
     print("-------------------------------------------------------------")
 
     if not MUSICA_CONF_PATH.is_file():
@@ -115,7 +167,7 @@ def validate_config_syntax_only():
 
 
 def ensure_sqlite_db_file():
-    print("\nSTEP 5: Ensuring SQLite DB exists (only artifact we create)")
+    print("\nSTEP 6: Ensuring SQLite DB exists (only artifact we create)")
     print("-------------------------------------------------------------")
 
     try:
@@ -150,6 +202,7 @@ def main():
     print("-----------------------------------------------------")
     detect_os()
 
+    select_install_path()
     verify_existing_layout()
     generate_config_if_missing()
     validate_config_syntax_only()
