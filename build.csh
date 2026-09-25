@@ -52,6 +52,7 @@ if ("$answer" == "Y" || "$answer" == "y") then
     echo "Build Notes release..."
 	# commands to run
 	mv Notes_v1.0.tar.gz ./../RELEASE/.
+	cd ..
 else if ("$answer" == "N" || "$answer" == "n") then
     echo "Check tar exclude file for correctness."
 endif
