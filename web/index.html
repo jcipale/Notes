@@ -677,6 +677,7 @@
                         <option value="Country">Country</option>
                         <option value="Classical">Classical</option>
                         <option value="Symphonic">Symphonic</option>
+                        <option value="Soundtrack">Soundtrack</option>
                     </select>
 
                     <label for="add-artist">Artist: *</label>
@@ -1298,6 +1299,7 @@
                         <option value="Country">Country</option>
                         <option value="Classical">Classical</option>
                         <option value="Symphonic">Symphonic</option>
+                        <option value="Soundtrack">Soundtrack</option>
                     </select>
 
                     <label for="query-format">Format:</label>
@@ -1572,18 +1574,20 @@
                 '</div>' +
                 '</div>';
 
-            html +=
-                '<div class="setting-row">' +
-                '<span class="setting-label">' +
-                'Database:' +
-                '</span>' +
-                '<div class="setting-value">' +
-                (
-                    settings.DATABASE ||
-                    "Not configured"
-                ) +
-                '</div>' +
-                '</div>';
+            if (settings.USAGE_TYPE === "Personal") {
+                html +=
+                    '<div class="setting-row">' +
+                    '<span class="setting-label">' +
+                    'Database:' +
+                    '</span>' +
+                    '<div class="setting-value">' +
+                    (
+                        settings.DATABASE ||
+                        "Not configured"
+                    ) +
+                    '</div>' +
+                    '</div>';
+            }
 
             if (settings.MASTER_IP) {
                 html +=
@@ -1598,23 +1602,6 @@
                     '</div>';
             }
 
-            if (
-                settings.MASTER_USER &&
-                settings.MASTER_USER.length > 0
-            ) {
-                html +=
-                    '<div class="setting-row">' +
-                    '<span class="setting-label">' +
-                    'Master Users:' +
-                    '</span>' +
-                    '<div class="setting-value">' +
-
-                    settings.MASTER_USER.join(
-                        "<br>"
-                    ) +
-                    '</div>' +
-                    '</div>';
-            }
             
             if (settings.USAGE_TYPE) {
                 html +=
@@ -1645,7 +1632,6 @@
             content.innerHTML = html;
         }
         
-
         /* ============================================================
                            QUERY DIALOG — JAVASCRIPT
            ============================================================ */
@@ -2174,7 +2160,7 @@
                     );
                 } else {
                     predicates.push(
-                        "artist LIKE " + sqlQuote("%" + artist + "%")
+                        "artist GLOB " + sqlQuote(artist + "*")
                     );
                 }
             }
@@ -2186,7 +2172,7 @@
                     );
                 } else {
                     predicates.push(
-                        "title LIKE " + sqlQuote("%" + title + "%")
+                        "title GLOB " + sqlQuote(title + "*")
                     );
                 }
             }
@@ -2203,7 +2189,7 @@
                     );
                 } else {
                     predicates.push(
-                        "composer LIKE " + sqlQuote("%" + composer + "%")
+                        "composer GLOB " + sqlQuote(composer + "*")
                     );
                 }
             }
@@ -2215,7 +2201,7 @@
                     );
                 } else {
                     predicates.push(
-                        "orchestra LIKE " + sqlQuote("%" + orchestra + "%")
+                        "orchestra GLOB " + sqlQuote(orchestra + "*")
                     );
                 }
             }
@@ -2227,7 +2213,7 @@
                     );
                 } else {
                     predicates.push(
-                        "conductor LIKE " + sqlQuote("%" + conductor + "%")
+                        "conductor GLOB " + sqlQuote(conductor + "*")
                     );
                 }
             }
@@ -2475,8 +2461,7 @@
                 } else {
 
                     predicates.push(
-                        "artist LIKE " +
-                        sqlQuote("%" + artist + "%")
+                        "artist GLOB " +  sqlQuote(artist + "*")
                     );
                 }
             }
@@ -2486,15 +2471,13 @@
                 if (titleExact) {
 
                     predicates.push(
-                        "title = " +
-                        sqlQuote(title)
+                        "title = " + sqlQuote(title)
                     );
 
                 } else {
 
                     predicates.push(
-                        "title LIKE " +
-                        sqlQuote("%" + title + "%")
+                        "title GLOB " + sqlQuote(title + "*")
                     );
                 }
             }
@@ -2986,8 +2969,7 @@
                 } else {
 
                     predicates.push(
-                        "artist LIKE " +
-                        sqlQuote("%" + artist + "%")
+                        "artist GLOB " + sqlQuote(artist + "*")
                     );
                 }
             }
@@ -3004,8 +2986,7 @@
                 } else {
 
                     predicates.push(
-                        "title LIKE " +
-                        sqlQuote("%" + title + "%")
+                        "title GLOB " + sqlQuote(title + "*")
                     );
                 }
             }
