@@ -235,7 +235,7 @@
         }
 
         .query-panel {
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
@@ -267,7 +267,8 @@
 
         .query-row {
             display: grid;
-            grid-template-columns: 72px minmax(0, 1fr) auto;
+            /*grid-template-columns: 72px minmax(0, 1fr) auto;*/
+            grid-template-columns: 72px 644px auto auto;
             align-items: center;
             width: 100%;
             margin: 0 0 10px 0;
@@ -585,7 +586,8 @@
             font-weight: bold;
         }
 
-            .query-exact {
+        .query-exact,
+        .query-contains {
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -794,11 +796,19 @@
                             name="modify-artist-exact">
                         Exact
                     </label>
+                    
+                    <label class="query-contains">
+                        <input
+                            type="checkbox"
+                            id="modify-artist-contains"
+                            name="modify-artist-contains">
+                        Contains
+                    </label>
                 </div>
-
+                           
                 <div class="query-row">
                     <label for="modify-title">
-                        Title:
+                       Title:
                     </label>
 
                     <input
@@ -814,8 +824,31 @@
                             name="modify-title-exact">
                         Exact
                     </label>
+                    
+                    <label class="query-contains">
+                        <input
+                            type="checkbox"
+                            id="modify-title-contains"
+                            name="modify-title-contains">
+                        Contains
+                    </label>
                 </div>
 
+                <div class="query-row-secondary">
+                    <label for="modify-genre">
+                        Genre:
+                    </label>
+
+                    <select id="modify-genre" name="modify-genre">
+                        <option value="">Any</option>
+                        <option value="Jazz">Jazz</option>
+                        <option value="Rock">Rock</option>
+                        <option value="Country">Country</option>
+                        <option value="Classical">Classical</option>
+                        <option value="Symphonic">Symphonic</option>
+                        <option value="Soundtrack">Soundtrack</option>
+                    </select>
+                </div>    
             </div>
 
             <div class="query-actions">
@@ -1058,7 +1091,7 @@
                 <div class="query-section-title">
                     Primary Search Keys
                 </div>
-
+            
                 <div class="query-row">
                     <label for="delete-artist">
                         Artist:
@@ -1077,6 +1110,15 @@
                             name="delete-artist-exact">
                         Exact
                     </label>
+
+                    <label class="query-contains">
+                        <input
+                            type="checkbox"
+                            id="delete-artist-contains"
+                            name="delete-artist-contains">
+                        Contains
+                    </label>
+                                      
                 </div>
 
                 <div class="query-row">
@@ -1097,6 +1139,36 @@
                             name="delete-title-exact">
                         Exact
                     </label>
+                    
+                    <label class="query-contains">
+                        <input
+                        type="checkbox"
+                            id="delete-title-contains"
+                            name="delete-title-contains">
+                        Contains
+                    </label>
+                </div>
+                
+                <div class="query-row-secondary">
+
+                    <label for="delete-genre">
+                        Genre:
+                    </label>
+
+                    <select
+                        id="delete-genre"
+                        name="delete-genre">
+
+                        <option value="">Any</option>
+                        <option value="Jazz">Jazz</option>
+                        <option value="Rock">Rock</option>
+                        <option value="Country">Country</option>
+                        <option value="Classical">Classical</option>
+                        <option value="Symphonic">Symphonic</option>
+                        <option value="Soundtrack">Soundtrack</option>
+
+                    </select>
+
                 </div>
 
             </div>
@@ -1208,8 +1280,17 @@
                     <input type="text" id="query-artist" name="query-artist"
                            autocomplete="off">
                     <label class="query-exact">
-                        <input type="checkbox" id="query-artist-exact" name="query-artist-exact">
+                        <input type="checkbox"
+                            id="query-artist-exact"
+                            name="query-artist-exact">
                         Exact
+                    </label>
+
+                    <label class="query-contains">
+                        <input type="checkbox"
+                            id="query-artist-contains"
+                            name="query-artist-contains">
+                        Contains
                     </label>
                 </div>
 
@@ -1220,6 +1301,13 @@
                     <label class="query-exact">
                         <input type="checkbox" id="query-title-exact" name="query-title-exact">
                         Exact
+                    </label>
+                    
+                    <label class="query-contains">
+                        <input type="checkbox"
+                            id="query-title-contains"
+                            name="query-title-contains">
+                            Contains
                     </label>
                 </div>
 
@@ -1253,6 +1341,13 @@
                                    name="query-composer-exact">
                             Exact
                         </label>
+
+                        <label class="query-contains">
+                            <input type="checkbox"
+                                   id="query-composer-contains"
+                                   name="query-composer-contains">
+                            Contains
+                        </label>
                     </div>
 
                     <div class="query-row">
@@ -1267,6 +1362,15 @@
                                    name="query-conductor-exact">
                             Exact
                         </label>
+
+                        <!-- JARVIS INSERTED: Conductor Contains control -->
+                        <label class="query-contains">
+                            <input type="checkbox"
+                                   id="query-conductor-contains"
+                                   name="query-conductor-contains">
+                            Contains
+                        </label>
+                        <!-- END JARVIS INSERTED -->
                     </div>
 
                     <div class="query-row">
@@ -1281,6 +1385,15 @@
                                    name="query-orchestra-exact">
                             Exact
                         </label>
+
+                        <!-- JARVIS INSERTED: Orchestra Contains control -->
+                        <label class="query-contains">
+                            <input type="checkbox"
+                                   id="query-orchestra-contains"
+                                   name="query-orchestra-contains">
+                            Contains
+                        </label>
+                        <!-- END JARVIS INSERTED -->
                     </div>
                 </div>
             </div>
@@ -1783,7 +1896,8 @@
 
             if (
                 genre === "classical" ||
-                genre === "symphonic"
+                genre === "symphonic" ||
+                genre === "soundtrack"
             ) {
                 /*
                  * CHANGED: The container must be block-level so each
@@ -1822,6 +1936,14 @@
             document.getElementById("query-title-exact").checked = false;
 
             /*
+             * === JARVIS INSERTED/RESTORED ===
+             * Clear the Contains controls along with their search fields.
+             */
+            document.getElementById("query-artist-contains").checked = false;
+            document.getElementById("query-title-contains").checked = false;
+            /* === END JARVIS INSERTED/RESTORED === */
+
+            /*
              * CHANGED: Clear all conditional Classical/Symphonic search
              * fields and their Exact controls. Genre is reset below, and
              * the conditional section is explicitly hidden.
@@ -1829,9 +1951,25 @@
             document.getElementById("query-composer").value = "";
             document.getElementById("query-composer-exact").checked = false;
             document.getElementById("query-orchestra").value = "";
+
+            /*
+             * === JARVIS INSERTED/RESTORED ===
+             * Clear the Composer Contains control as well.
+             */
+            document.getElementById("query-composer-contains").checked = false;
+            /* === END JARVIS INSERTED/RESTORED === */
             document.getElementById("query-orchestra-exact").checked = false;
+
+            /* JARVIS INSERTED: Clear Orchestra Contains control */
+            document.getElementById("query-orchestra-contains").checked = false;
+            /* END JARVIS INSERTED */
+
             document.getElementById("query-conductor").value = "";
             document.getElementById("query-conductor-exact").checked = false;
+
+            /* JARVIS INSERTED: Clear Conductor Contains control */
+            document.getElementById("query-conductor-contains").checked = false;
+            /* END JARVIS INSERTED */
 
             document.getElementById("query-genre").value = "";
             document.getElementById("query-classical-fields").style.display = "none";
@@ -2055,10 +2193,6 @@
             const title =
                 document.getElementById("query-title").value.trim();
 
-            /*
-             * CHANGED: Classical/Symphonic fields are independent
-             * primary search criteria. Blank fields impose no filter.
-             */
             const composer =
                 document.getElementById("query-composer").value.trim();
 
@@ -2084,17 +2218,6 @@
                SELECT clause
                -------------------------------------------------------- */
 
-            /*
-             * CHANGED: Build the SELECT list from the selected Genre.
-             *
-             * Classical/Symphonic records always return the three
-             * Classical search dimensions, plus Genre. Other genres
-             * return Genre as the minimum additional field.
-             *
-             * Extended Display Fields are appended below. Search
-             * criteria determine the WHERE clause; they do not
-             * otherwise alter the SELECT list.
-             */
             const columns = [
                 "id",
                 "artist",
@@ -2112,6 +2235,11 @@
 
             columns.push("genre");
 
+            /*
+             * === JARVIS INSERTED/RESTORED ===
+             * Extended Display Fields are appended to the SELECT list
+             * when their checkboxes are selected.
+             */
             if (document.getElementById("display-year").checked) {
                 columns.push("year");
             }
@@ -2123,11 +2251,19 @@
             if (document.getElementById("display-catalog-id").checked) {
                 columns.push("catalog_number");
             }
+            /* === END JARVIS INSERTED/RESTORED === */
 
             /* --------------------------------------------------------
                WHERE clause
                -------------------------------------------------------- */
 
+            /*
+             * === JARVIS INSERTED/RESTORED ===
+             * Search mode:
+             *   Exact    = exact case-sensitive match
+             *   Contains = case-sensitive match anywhere in the field
+             *   Neither  = case-sensitive starts-with match
+             */
             const predicates = [];
 
             function sqlQuote(value) {
@@ -2137,26 +2273,45 @@
             const artistExact =
                 document.getElementById("query-artist-exact").checked;
 
+            const artistContains =
+                document.getElementById("query-artist-contains").checked;
+
             const titleExact =
                 document.getElementById("query-title-exact").checked;
 
-            /*
-             * CHANGED: Each Classical/Symphonic search field gets its
-             * own Exact option, matching Artist and Title behavior.
-             */
+            const titleContains =
+                document.getElementById("query-title-contains").checked;
+            
+
             const composerExact =
                 document.getElementById("query-composer-exact").checked;
+
+            const composerContains =
+                document.getElementById("query-composer-contains").checked;
 
             const orchestraExact =
                 document.getElementById("query-orchestra-exact").checked;
 
+            /* JARVIS INSERTED: Orchestra Contains search mode */
+            const orchestraContains =
+                document.getElementById("query-orchestra-contains").checked;
+            /* END JARVIS INSERTED */
+
             const conductorExact =
                 document.getElementById("query-conductor-exact").checked;
 
+            /* JARVIS INSERTED: Conductor Contains search mode */
+            const conductorContains =
+                document.getElementById("query-conductor-contains").checked;
+             
             if (artist !== "") {
                 if (artistExact) {
                     predicates.push(
                         "artist = " + sqlQuote(artist)
+                    );
+                } else if (artistContains) {
+                    predicates.push(
+                        "artist GLOB " + sqlQuote("*" + artist + "*")
                     );
                 } else {
                     predicates.push(
@@ -2164,11 +2319,15 @@
                     );
                 }
             }
-
+            
             if (title !== "") {
                 if (titleExact) {
                     predicates.push(
                         "title = " + sqlQuote(title)
+                    );
+                } else if (titleContains) {
+                    predicates.push(
+                        "title GLOB " + sqlQuote("*" + title + "*")
                     );
                 } else {
                     predicates.push(
@@ -2176,16 +2335,15 @@
                     );
                 }
             }
-
-            /*
-             * CHANGED: Composer, Orchestra, and Conductor use the same
-             * fuzzy/exact matching model as Artist and Title. Populated
-             * fields are ANDed with all other active search criteria.
-             */
+            
             if (composer !== "") {
                 if (composerExact) {
                     predicates.push(
                         "composer = " + sqlQuote(composer)
+                    );
+                } else if (composerContains) {
+                    predicates.push(
+                        "composer GLOB " + sqlQuote("*" + composer + "*")
                     );
                 } else {
                     predicates.push(
@@ -2199,17 +2357,25 @@
                     predicates.push(
                         "orchestra = " + sqlQuote(orchestra)
                     );
+                } else if (orchestraContains) {
+                    predicates.push(
+                        "orchestra GLOB " + sqlQuote("*" + orchestra + "*")
+                    );
                 } else {
                     predicates.push(
                         "orchestra GLOB " + sqlQuote(orchestra + "*")
                     );
                 }
             }
-
+ 
             if (conductor !== "") {
                 if (conductorExact) {
                     predicates.push(
                         "conductor = " + sqlQuote(conductor)
+                    );
+                } else if (conductorContains) {
+                    predicates.push(
+                        "conductor GLOB " + sqlQuote("*" + conductor + "*")
                     );
                 } else {
                     predicates.push(
@@ -2217,7 +2383,7 @@
                     );
                 }
             }
-
+ 
             if (genre !== "") {
                 predicates.push(
                     "genre = " + sqlQuote(genre)
@@ -2411,31 +2577,47 @@
            ============================================================ */
 
         function executeModifySearch() {
-
+                        
             const artist =
                 document.getElementById("modify-artist").value.trim();
 
             const title =
                 document.getElementById("modify-title").value.trim();
 
+            const genre =
+                document.getElementById("modify-genre").value;
+
             const artistExact =
                 document.getElementById("modify-artist-exact").checked;
 
+            const artistContains =
+                document.getElementById("modify-artist-contains").checked;
+
             const titleExact =
                 document.getElementById("modify-title-exact").checked;
-
+                
+            const titleContains =
+                document.getElementById("modify-title-contains").checked;
+                
             /*
              * Artist and Title are independent search criteria.
-             * At least one must be supplied.
+             * Genre is an optional narrowing filter.
              *
-             * Unchecked Exact uses substring matching. Checked Exact
-             * requires the complete field value to match.
+             * Artist and Title use the selected search mode.
+             * Genre is always an exact match against the selected
+             * genre value.
+             *
+             * A Genre-only search is permitted.
              */
 
-            if (artist === "" && title === "") {
+            if (
+                artist === "" &&
+                title === "" &&
+                genre === ""
+            ) {
 
                 alert(
-                    "Enter an Artist or Title to search."
+                    "Enter an Artist or Title, or select a Genre to search."
                 );
 
                 document.getElementById("modify-artist").focus();
@@ -2449,7 +2631,7 @@
 
             const predicates = [];
 
-            if (artist !== "") {
+             if (artist !== "") {
 
                 if (artistExact) {
 
@@ -2458,13 +2640,21 @@
                         sqlQuote(artist)
                     );
 
+                } else if (artistContains) {
+
+                    predicates.push(
+                        "artist GLOB " +
+                        sqlQuote("*" + artist + "*")
+                    );
+
                 } else {
 
                     predicates.push(
-                        "artist GLOB " +  sqlQuote(artist + "*")
+                        "artist GLOB " +
+                        sqlQuote(artist + "*")
                     );
                 }
-            }
+            }           
 
             if (title !== "") {
 
@@ -2474,14 +2664,27 @@
                         "title = " + sqlQuote(title)
                     );
 
+                } else if (titleContains){
+
+                    predicates.push(
+                        "title GLOB " + sqlQuote("*" + title + "*")
+                    );
                 } else {
 
                     predicates.push(
-                        "title GLOB " + sqlQuote(title + "*")
+                        "title GLOB " +
+                        sqlQuote(title + "*")
                     );
-                }
+                }            
             }
+            
+            if (genre !== "") {
 
+                predicates.push(
+                    "genre = " + sqlQuote(genre)
+                );
+            }
+            
             /*
              * Modify search always retrieves the complete record.
              * NULL values are returned by SQLite and displayed as
@@ -2496,7 +2699,7 @@
                 "FROM recordings " +
                 "WHERE " + predicates.join(" AND ") +
                 " ORDER BY artist ASC, year ASC;";
-
+            
             console.log("Musica Modify Search:");
             console.log(sql);
 
@@ -2560,7 +2763,6 @@
                 }
             );
         }
-
 
         function displayModifyResults(result) {
 
@@ -2928,6 +3130,7 @@
 
         function executeDeleteSearch() {
 
+            /*            
             const artist =
                 document.getElementById("delete-artist").value.trim();
 
@@ -2936,10 +3139,38 @@
 
             const artistExact =
                 document.getElementById("delete-artist-exact").checked;
+                
+            const artistContains =
+                document.getElementById("delete-artist-contains").checked;    
 
             const titleExact =
                 document.getElementById("delete-title-exact").checked;
 
+            const titleContains =
+                document.getElementById("delete-title-contains").checked;
+            */
+            
+                const artist =
+                    document.getElementById("delete-artist").value.trim();
+
+                const title =
+                    document.getElementById("delete-title").value.trim();
+
+                const artistExact =
+                    document.getElementById("delete-artist-exact").checked;
+
+                const artistContains =
+                    document.getElementById("delete-artist-contains").checked;
+
+                const titleExact =
+                    document.getElementById("delete-title-exact").checked;
+
+                const titleContains =
+                    document.getElementById("delete-title-contains").checked;
+
+                const genre =
+                    document.getElementById("delete-genre").value.trim();
+                    
             if (artist === "" && title === "") {
 
                 alert(
@@ -2966,10 +3197,18 @@
                         sqlQuote(artist)
                     );
 
+                } else if (artistContains) {
+
+                    predicates.push(
+                        "artist GLOB " +
+                        sqlQuote("*" + artist + "*")
+                    );
+
                 } else {
 
                     predicates.push(
-                        "artist GLOB " + sqlQuote(artist + "*")
+                        "artist GLOB " +
+                        sqlQuote(artist + "*")
                     );
                 }
             }
@@ -2983,14 +3222,35 @@
                         sqlQuote(title)
                     );
 
+                } else if (titleContains) {
+
+                    predicates.push(
+                        "title GLOB " +
+                        sqlQuote("*" + title + "*")
+                    );
+
                 } else {
 
                     predicates.push(
-                        "title GLOB " + sqlQuote(title + "*")
+                        "title GLOB " +
+                        sqlQuote(title + "*")
                     );
                 }
             }
+            
+            /*
+             * JARVIS INSERTED: Genre is an optional exact-match
+             * narrowing filter for Delete search.
+             */
+             if (genre !== "") {
 
+                 predicates.push(
+                    "genre = " +
+                    sqlQuote(genre)
+                );
+            }
+            /* END JARVIS INSERTED */      
+                    
             const sql =
                 "SELECT id, artist, title, year, " +
                 "composer, orchestra, conductor, genre, format, " +
