@@ -259,7 +259,21 @@
             border-radius: 5px;
             background-color: #ffffff;
         }
+        
+        #queryPanel .query-title + .query-section{
+            width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            box-sizing: border-box;
+        }
 
+        #queryPanel .query-title + .query-section + .query-section {
+            width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            box-sizing: border-box;
+        }
+         
         .query-section-title {
             margin: 0 0 12px 0;
             font-weight: bold;
@@ -267,9 +281,9 @@
 
         .query-row {
             display: grid;
-            /*grid-template-columns: 72px minmax(0, 1fr) auto;*/
-            grid-template-columns: 72px 644px auto auto;
+            grid-template-columns: 72px 700px 75px 75px;
             align-items: center;
+            justify-content: start;
             width: 100%;
             margin: 0 0 10px 0;
         }
@@ -283,7 +297,7 @@
 
         .query-row .query-exact {
             margin-left: 10px;
-            margin-right: 0;
+            margin-right: 10px;
             font-weight: normal;
         }
 
@@ -303,6 +317,13 @@
             grid-template-columns: 125px minmax(0, 1fr);
             row-gap: 10px;
             align-items: center;
+        }
+        
+        #addPanel .query-section {
+            width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            box-sizing: border-box;
         }
         
         #add-genre {
@@ -326,6 +347,47 @@
                 
         .add-form + .add-form {
             margin-top: 10px;
+        }
+        
+        .add-metadata-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 28px;
+            margin-top: 10px;
+            margin-left: 75px;
+        }
+
+        .add-metadata-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .add-metadata-item label {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        #add-year {
+            width: 60px;
+            padding: 7px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        #add-label {
+            width: 180px;
+            padding: 7px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        #add-catalog {
+            width: 150px;
+            padding: 7px;
+            font-size: 1em;
+            box-sizing: border-box;
         }
 
         .add-classical-fields {
@@ -371,10 +433,15 @@
 
         .add-bottom-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: max-content max-content max-content max-content;
             column-gap: 28px;
             row-gap: 10px;
             margin-top: 10px;
+            justify-content: start;
+        }
+        
+        .add-bottom-item:first-child {
+            margin-left: 55px;
         }
 
         .add-bottom-item {
@@ -387,9 +454,9 @@
         .add-bottom-item label {
             font-weight: bold;
         }
-
+        
         .add-bottom-item select {
-            width: 100%;
+            width: 130px;
             padding: 7px;
             font-size: 1em;
             box-sizing: border-box;
@@ -500,7 +567,7 @@
         }
 
         .query-section.display-fields {
-            width: 430px;
+            width: 300px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -541,9 +608,11 @@
             border-radius: 4px;
             cursor: pointer;
         }
-
+  
         .query-results {
             margin-top: 18px;
+            margin-left: -24px;
+            margin-right: -24px;
             padding-right: 12px;
             padding-bottom: 12px;
             overflow: auto;
@@ -585,20 +654,20 @@
             outline: 2px solid #333;
             font-weight: bold;
         }
-
+        
         .query-exact,
         .query-contains {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            margin-left: 10px;
+            margin-left: 4px;
             white-space: nowrap;
             font-weight: normal;
             vertical-align: middle;
         }
 
         .query-exact input[type="checkbox"] {
-            margin: 0;
+            margin: 0; 
         }
 
     </style>
@@ -687,9 +756,7 @@
 
                     <label for="add-title">Title: *</label>
                     <input type="text" id="add-title" name="add-title" autocomplete="off">
-
-                    <label for="add-year">Year: *</label>
-                    <input type="text" id="add-year" name="add-year" autocomplete="off">
+                     
                 </div>
 
                 <div id="addSymphonicSection" class="add-classical-fields" style="display: none;">
@@ -707,14 +774,37 @@
                     </div>
                 </div>
 
-                <div class="add-form">
-                    <label for="add-label">Label: *</label>
-                    <input type="text" id="add-label" name="add-label" autocomplete="off">
+                <div class="add-metadata-row">
 
-                    <label for="add-catalog">Catalog Number: *</label>
-                    <input type="text" id="add-catalog" name="add-catalog" autocomplete="off">
+                    <div class="add-metadata-item">
+                        <label for="add-year">Year: *</label>
+                        <input
+                            type="text"
+                            id="add-year"
+                            name="add-year"
+                            autocomplete="off">
+                    </div>
+
+                    <div class="add-metadata-item">
+                        <label for="add-label">Label: *</label>
+                        <input
+                            type="text"
+                            id="add-label"
+                            name="add-label"
+                            autocomplete="off">
+                    </div>
+
+                    <div class="add-metadata-item">
+                        <label for="add-catalog">Catalog Number: *</label>
+                        <input 
+                            type="text"
+                            id="add-catalog"
+                            name="add-catalog"
+                            autocomplete="off">
+                    </div>
+
                 </div>
-
+                
                 <div class="add-bottom-grid">
                     <div class="add-bottom-item">
                         <label for="add-format">Format: *</label>
@@ -1363,14 +1453,13 @@
                             Exact
                         </label>
 
-                        <!-- JARVIS INSERTED: Conductor Contains control -->
                         <label class="query-contains">
                             <input type="checkbox"
                                    id="query-conductor-contains"
                                    name="query-conductor-contains">
                             Contains
                         </label>
-                        <!-- END JARVIS INSERTED -->
+                         
                     </div>
 
                     <div class="query-row">
@@ -1386,14 +1475,13 @@
                             Exact
                         </label>
 
-                        <!-- JARVIS INSERTED: Orchestra Contains control -->
                         <label class="query-contains">
                             <input type="checkbox"
                                    id="query-orchestra-contains"
                                    name="query-orchestra-contains">
                             Contains
                         </label>
-                        <!-- END JARVIS INSERTED -->
+                        
                     </div>
                 </div>
             </div>
@@ -1872,7 +1960,8 @@
 
             if (
                 genre === "classical" ||
-                genre === "symphonic"
+                genre === "symphonic" ||
+                genre === "soundtrack"
             ) {
                 section.style.display = "block";
             } else {
@@ -1920,6 +2009,12 @@
 
             leavePU();
             closeAuthentication();
+            
+            /*
+             * CHANGED: Always initialize Query when entering the
+             * operational path. No previous Query state carries over.
+             */
+            clearQuery();
 
             document.getElementById("queryPanel").style.display = "block";
             document.getElementById("query-artist").focus();
@@ -1935,14 +2030,9 @@
             document.getElementById("query-title").value = "";
             document.getElementById("query-title-exact").checked = false;
 
-            /*
-             * === JARVIS INSERTED/RESTORED ===
-             * Clear the Contains controls along with their search fields.
-             */
             document.getElementById("query-artist-contains").checked = false;
             document.getElementById("query-title-contains").checked = false;
-            /* === END JARVIS INSERTED/RESTORED === */
-
+            
             /*
              * CHANGED: Clear all conditional Classical/Symphonic search
              * fields and their Exact controls. Genre is reset below, and
@@ -1951,26 +2041,17 @@
             document.getElementById("query-composer").value = "";
             document.getElementById("query-composer-exact").checked = false;
             document.getElementById("query-orchestra").value = "";
-
-            /*
-             * === JARVIS INSERTED/RESTORED ===
-             * Clear the Composer Contains control as well.
-             */
+ 
             document.getElementById("query-composer-contains").checked = false;
-            /* === END JARVIS INSERTED/RESTORED === */
             document.getElementById("query-orchestra-exact").checked = false;
 
-            /* JARVIS INSERTED: Clear Orchestra Contains control */
             document.getElementById("query-orchestra-contains").checked = false;
-            /* END JARVIS INSERTED */
-
+           
             document.getElementById("query-conductor").value = "";
             document.getElementById("query-conductor-exact").checked = false;
 
-            /* JARVIS INSERTED: Clear Conductor Contains control */
             document.getElementById("query-conductor-contains").checked = false;
-            /* END JARVIS INSERTED */
-
+           
             document.getElementById("query-genre").value = "";
             document.getElementById("query-classical-fields").style.display = "none";
             document.getElementById("query-format").value = "";
@@ -2081,6 +2162,10 @@
                 genre === "Classical" ||
                 genre === "Symphonic";
 
+            const expandedGenre =
+                classicalGenre ||
+                genre === "Soundtrack";
+
             if (
                 classicalGenre &&
                 (
@@ -2091,26 +2176,26 @@
             ) {
                 alert(
                     "Composer, Conductor, and Orchestra are required " +
-                    "for Classical and Symphonic recordings."
+                     "for Classical and Symphonic recordings."
                 );
-                return;
-            }
+            return;
+        }
 
-            const record = {
-                artist: artist,
-                title: title,
-                year: yearText,
-                composer: classicalGenre ? composer : null,
-                orchestra: classicalGenre ? orchestra : null,
-                conductor: classicalGenre ? conductor : null,
-                genre: genre,
-                format: format,
-                label: label,
-                catalog_number: catalogNumber,
-                recording_mode: mode,
-                reissue: reissue,
-                dbx_encoded: dbx
-            };
+        const record = {
+            artist: artist,
+            title: title,
+            year: yearText,
+            composer: expandedGenre ? composer : null,
+            orchestra: expandedGenre ? orchestra : null,
+            conductor: expandedGenre ? conductor : null,
+            genre: genre,
+            format: format,
+            label: label,
+            catalog_number: catalogNumber,
+            recording_mode: mode,
+            reissue: reissue,
+            dbx_encoded: dbx
+        };
 
             console.log("Musica Add:");
             console.log(record);
@@ -2235,11 +2320,6 @@
 
             columns.push("genre");
 
-            /*
-             * === JARVIS INSERTED/RESTORED ===
-             * Extended Display Fields are appended to the SELECT list
-             * when their checkboxes are selected.
-             */
             if (document.getElementById("display-year").checked) {
                 columns.push("year");
             }
@@ -2251,20 +2331,13 @@
             if (document.getElementById("display-catalog-id").checked) {
                 columns.push("catalog_number");
             }
-            /* === END JARVIS INSERTED/RESTORED === */
-
+            
             /* --------------------------------------------------------
                WHERE clause
-               -------------------------------------------------------- */
+               -------------------------------------------------------- 
+            */
 
-            /*
-             * === JARVIS INSERTED/RESTORED ===
-             * Search mode:
-             *   Exact    = exact case-sensitive match
-             *   Contains = case-sensitive match anywhere in the field
-             *   Neither  = case-sensitive starts-with match
-             */
-            const predicates = [];
+           const predicates = [];
 
             function sqlQuote(value) {
                 return "'" + value.replace(/'/g, "''") + "'";
@@ -2292,15 +2365,12 @@
             const orchestraExact =
                 document.getElementById("query-orchestra-exact").checked;
 
-            /* JARVIS INSERTED: Orchestra Contains search mode */
             const orchestraContains =
                 document.getElementById("query-orchestra-contains").checked;
-            /* END JARVIS INSERTED */
-
+            
             const conductorExact =
                 document.getElementById("query-conductor-exact").checked;
 
-            /* JARVIS INSERTED: Conductor Contains search mode */
             const conductorContains =
                 document.getElementById("query-conductor-contains").checked;
              
@@ -3129,8 +3199,7 @@
            ============================================================ */
 
         function executeDeleteSearch() {
-
-            /*            
+       
             const artist =
                 document.getElementById("delete-artist").value.trim();
 
@@ -3139,37 +3208,18 @@
 
             const artistExact =
                 document.getElementById("delete-artist-exact").checked;
-                
+
             const artistContains =
-                document.getElementById("delete-artist-contains").checked;    
+                document.getElementById("delete-artist-contains").checked;
 
             const titleExact =
                 document.getElementById("delete-title-exact").checked;
 
             const titleContains =
                 document.getElementById("delete-title-contains").checked;
-            */
-            
-                const artist =
-                    document.getElementById("delete-artist").value.trim();
 
-                const title =
-                    document.getElementById("delete-title").value.trim();
-
-                const artistExact =
-                    document.getElementById("delete-artist-exact").checked;
-
-                const artistContains =
-                    document.getElementById("delete-artist-contains").checked;
-
-                const titleExact =
-                    document.getElementById("delete-title-exact").checked;
-
-                const titleContains =
-                    document.getElementById("delete-title-contains").checked;
-
-                const genre =
-                    document.getElementById("delete-genre").value.trim();
+            const genre =
+                document.getElementById("delete-genre").value.trim();
                     
             if (artist === "" && title === "") {
 
@@ -3238,19 +3288,14 @@
                 }
             }
             
-            /*
-             * JARVIS INSERTED: Genre is an optional exact-match
-             * narrowing filter for Delete search.
-             */
-             if (genre !== "") {
+            if (genre !== "") {
 
                  predicates.push(
                     "genre = " +
                     sqlQuote(genre)
                 );
             }
-            /* END JARVIS INSERTED */      
-                    
+                                
             const sql =
                 "SELECT id, artist, title, year, " +
                 "composer, orchestra, conductor, genre, format, " +
@@ -3525,8 +3570,7 @@
                 "deleteConfirm"
             ).dataset.recordId = "";
         }
-
-
+        
         function clearDeleteSearch() {
 
             document.getElementById(
@@ -3542,8 +3586,20 @@
             ).checked = false;
 
             document.getElementById(
+                "delete-artist-contains"
+            ).checked = false;
+
+            document.getElementById(
                 "delete-title-exact"
             ).checked = false;
+
+            document.getElementById(
+                "delete-title-contains"
+            ).checked = false;
+
+            document.getElementById(
+                "delete-genre"
+            ).value = "";
 
             document.getElementById(
                 "deleteResultsBody"
@@ -3559,8 +3615,7 @@
                 "delete-artist"
             ).focus();
         }
-
-
+        
         function clearModifySearch() {
 
             document.getElementById(
@@ -3576,8 +3631,20 @@
             ).checked = false;
 
             document.getElementById(
+                "modify-artist-contains"
+            ).checked = false;
+
+            document.getElementById(
                 "modify-title-exact"
             ).checked = false;
+
+            document.getElementById(
+                "modify-title-contains"
+            ).checked = false;
+
+            document.getElementById(
+                "modify-genre"
+            ).value = "";
 
             document.getElementById(
                 "modifyResultsBody"
@@ -3707,23 +3774,30 @@
             document.getElementById("modifyResults").style.display = "none";
         }
 
-
+        
         function openModify() {
 
             /*
              * Enter the Edit() operational path. Authentication has
              * already occurred at the Modify entry point.
              */
-
+            
             if (accessState !== "PU") {
                 alert("Edit access is required.");
                 return;
             }
 
             /*
+             * CHANGED: Always initialize Edit() when entering the
+             * operational path. No previous Edit() state carries over.
+             */
+            clearModifySearch();
+            
+            /*
              * CHANGED: Keep the Add/Edit/Delete control row visible
              * while the Edit() operational panel is displayed.
              */
+             
             document.getElementById("editOptions").style.display = "block";
             document.getElementById("addPanel").style.display = "none";
             document.getElementById("modifyPanel").style.display = "block";
@@ -3734,8 +3808,8 @@
 
             document.getElementById("modify-artist").focus();
         }
-
-
+        
+        
         function openDelete() {
 
             /*
@@ -3747,7 +3821,13 @@
                 alert("Edit access is required.");
                 return;
             }
-
+            
+            /*
+             * CHANGED: Always initialize Delete when entering the
+             * operational path. No previous Delete state carries over.
+             */
+            clearDeleteSearch();
+            
             /*
              * CHANGED: Keep the Add/Edit/Delete control row visible
              * while the Delete() operational panel is displayed.
@@ -3988,7 +4068,103 @@
         document.getElementById("modifyPanel").style.display = "none";
         document.getElementById("deletePanel").style.display = "none";
 
-        resetQueryOnLoad();
+        /*
+         * ============================================================
+         * Exact / Contains mutual exclusion
+         *
+         * Each search field has three possible modes:
+         *
+         *     Neither checked = Starts With
+         *     Exact checked   = Exact Match
+         *     Contains checked = Contains Anywhere
+         *
+         * Exact and Contains are mutually exclusive.
+         * Selecting one immediately clears the other.
+         * ============================================================
+         */
+
+        const exclusiveSearchModes = [
+
+            [
+                "query-artist-exact",
+                "query-artist-contains"
+            ],
+
+            [
+                "query-title-exact",
+                "query-title-contains"
+            ],
+
+            [
+                "query-composer-exact",
+                "query-composer-contains"
+            ],
+
+            [
+                "query-conductor-exact",
+                "query-conductor-contains"
+            ],
+
+            [
+                "query-orchestra-exact",
+                "query-orchestra-contains"
+            ],
+
+            [
+                "modify-artist-exact",
+                "modify-artist-contains"
+            ],
+
+            [
+                "modify-title-exact",
+                "modify-title-contains"
+            ],
+
+            [
+                "delete-artist-exact",
+                "delete-artist-contains"
+            ],
+
+            [
+                "delete-title-exact",
+                "delete-title-contains"
+            ]
+
+        ];
+
+        exclusiveSearchModes.forEach(
+            ([exactId, containsId]) => {
+
+                const exact =
+                    document.getElementById(exactId);
+
+                const contains =
+                    document.getElementById(containsId);
+
+                exact.addEventListener(
+                    "change",
+                    function() {
+
+                        if (this.checked) {
+                            contains.checked = false;
+                        }
+
+                    }
+                );
+
+                contains.addEventListener(
+                    "change",
+                    function() {
+
+                        if (this.checked) {
+                            exact.checked = false;
+                        }
+
+                    }
+                );
+
+            }
+        );
 
         document.getElementById("add-genre").addEventListener(
             "input",
