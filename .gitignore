@@ -1,5 +1,6 @@
 # Local installation configuration
 web/config/config.dta
+docs/*.pdf
 
 # SQLite databases
 *.db
