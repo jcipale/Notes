@@ -96,19 +96,6 @@ else if ("$answer" == "N" || "$answer" == "n") then
     echo "Check tar exclude file for correctness."
 endif
 
-#----------- temp debug -----------
-echo "hostname: " `hostname`
-echo "whoami:   " `whoami`
-echo "root:     " `pwd`
-
-ls -ld /usr /usr/bin
-
-echo "Git binary:"
-ls -l /usr/bin/git
-
-echo "Git version:"
-/usr/bin/git --version
-
 cd $BASE
 
 git add $REL/$RelVer
