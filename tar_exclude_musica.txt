@@ -10,7 +10,10 @@
 ./*/__pycache__
 ./*/*.pyc
 ./build.csh
+./docs/*
 ./docs/.~lock*
+./docs
 ./tar_exclude*.txt
 ./Musica*.gz
 ./RELEASE/*
+./RELEASE

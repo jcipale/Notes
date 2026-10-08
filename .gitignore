@@ -1,6 +1,8 @@
 # Local installation configuration
 web/config/config.dta
 docs/*.pdf
+docs
+*.pdf
 
 # SQLite databases
 *.db
@@ -22,3 +24,4 @@ web/etc/security.txt
 ./*gz
 ./web/*gz
 ./RELEASE/*.gz
+./RELEASE
