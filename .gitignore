@@ -2,7 +2,7 @@
 web/config/config.dta
 docs/*.pdf
 docs
-*.pdf
+#*.pdf
 
 # SQLite databases
 *.db
