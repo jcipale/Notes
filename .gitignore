@@ -13,6 +13,7 @@ __pycache__/
 # Editor backup and lock files
 *~
 .~lock.*
+git.tkn
 
 # User configured files for testing/validation
 web/etc/security.txt
